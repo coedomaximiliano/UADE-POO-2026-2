@@ -1,0 +1,15 @@
+# Instaladores y binarios pesados (no versionar)
+*.exe
+*.msi
+*.dmg
+*.pkg
+
+# Build de proyectos Java
+target/
+out/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/

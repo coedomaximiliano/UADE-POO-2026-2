@@ -12,28 +12,38 @@ Cada grupo sube su código mediante fork + pull request. Nadie tiene permiso de 
    cd UADE-POO-2026-2
    ```
 
-3. **Creá la carpeta de tu grupo** dentro del trabajo práctico correspondiente:
-   ```
-   tps/tpN/grupoN/
-   ```
-   Reemplazá `tpN` por el número de TP y `grupoN` por el número de tu grupo (ej: `grupo3`).
+3. **Ubicá la carpeta de tu grupo**, según qué estés entregando:
+   - **Trabajo práctico**: ya existe una carpeta para tu grupo dentro de `TRABAJOS PRACTICOS/TPN/`, ej: `TRABAJOS PRACTICOS/TP1/grupo 3/`. No la crees de nuevo, usá la que ya está.
+   - **Ejercicio de clase**: creá la carpeta de tu grupo dentro de `EJERCICIOS CLASE/ejercicio clase N/`, ej: `EJERCICIOS CLASE/ejercicio clase 1/grupo 3/`.
+
+   Reemplazá `N` por el número de TP o de clase, y `grupo 3` por el número de tu grupo.
 
 4. **Creá una rama** para la entrega del grupo:
    ```
    git checkout -b tpN-grupoN
    ```
-
-5. **Commiteá y pusheá** a tu fork:
+   o, si es un ejercicio de clase:
    ```
-   git add tps/tpN/grupoN
+   git checkout -b claseN-grupoN
+   ```
+
+5. **Commiteá y pusheá** a tu fork (las rutas con espacios van entre comillas):
+   ```
+   git add "TRABAJOS PRACTICOS/TPN/grupo N"
    git commit -m "TPN: GrupoN"
    git push origin tpN-grupoN
+   ```
+   o, para un ejercicio de clase:
+   ```
+   git add "EJERCICIOS CLASE/ejercicio clase N/grupo N"
+   git commit -m "Clase N: GrupoN"
+   git push origin claseN-grupoN
    ```
 
 6. **Abrí un Pull Request** desde el fork del grupo hacia `coedomaximiliano/UADE-POO-2026-2` (rama `main`).
 
 ## Reglas
 
-- Subí código **únicamente** dentro de la carpeta de tu propio grupo. No modifiques archivos de otros grupos.
+- Subí código **únicamente** dentro de la carpeta de tu propio grupo. No modifiques archivos de otros grupos ni de `CLASES/`.
 - **Un solo PR por grupo y por entrega**: coordínense entre los integrantes para no pisarse. Correcciones posteriores van como nuevos commits en la misma rama, no un PR nuevo.
-- El título del PR debe indicar el TP y el grupo, ej: `TP1: Grupo3`.
+- El título del PR debe indicar la entrega y el grupo, ej: `TP1: Grupo3` o `Clase 1: Grupo3`.

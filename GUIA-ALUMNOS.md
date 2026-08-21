@@ -39,33 +39,35 @@ Las entregas son por grupo: **un solo fork y una sola rama por grupo**, no uno p
 2. `File > Clone repository`.
 3. Elegí el fork del grupo (`TU-USUARIO/UADE-POO-2026-2`, donde `TU-USUARIO` es el usuario de quien hizo el fork) y una carpeta local donde guardarlo. Click en **Clone**.
 
-### 3. Creá la carpeta del grupo y agreguen sus archivos
+### 3. Ubicá o creá la carpeta del grupo
 
-1. Abrí la carpeta local del repo (en GitHub Desktop: `Repository > Show in Explorer`).
-2. Entrá a `tps/tpN/` (reemplazá `N` por el número del trabajo práctico que están entregando).
-3. Creá una carpeta con el número de grupo, por ejemplo `tps/tp1/grupo3/`.
-4. Copien ahí los archivos del TP (todos los integrantes trabajan sobre la misma carpeta).
+Primero definí qué estás entregando:
+
+- **Trabajo práctico** (`TP1`, `TP2`, `TP3`, `TPI FINAL`): ya existe una carpeta para tu grupo. Andá a `TRABAJOS PRACTICOS/TPN/` (reemplazá `N` por el número del TP) y buscá la carpeta `grupo N` con el número de tu grupo, ej: `TRABAJOS PRACTICOS/TP1/grupo 3/`. **No crees una carpeta nueva**, usá esa.
+- **Ejercicio de clase**: andá a `EJERCICIOS CLASE/ejercicio clase N/` (reemplazá `N` por el número de la clase) y creá ahí la carpeta de tu grupo, ej: `EJERCICIOS CLASE/ejercicio clase 1/grupo 3/`.
+
+Copien ahí los archivos correspondientes (todos los integrantes trabajan sobre la misma carpeta).
 
 ### 4. Creá una rama
 
 1. En GitHub Desktop, arriba dice "Current branch". Click ahí y luego **New branch**.
-2. Nombrala `tpN-grupoN` (ej: `tp1-grupo3`).
+2. Nombrala `tpN-grupoN` si es un trabajo práctico (ej: `tp1-grupo3`), o `claseN-grupoN` si es un ejercicio de clase (ej: `clase1-grupo3`).
 3. Click en **Create branch**.
 
 ### 5. Commit y push
 
 1. GitHub Desktop va a mostrar los archivos nuevos que agregaste (columna izquierda).
-2. Abajo a la izquierda, escribí un mensaje de commit, ej: `TP1: Grupo3`.
-3. Click en **Commit to tp1-grupo3**.
+2. Abajo a la izquierda, escribí un mensaje de commit, ej: `TP1: Grupo3` o `Clase 1: Grupo3`.
+3. Click en **Commit to tp1-grupo3** (o `clase1-grupo3`).
 4. Arriba a la derecha, click en **Push origin** (esto sube los cambios al fork del grupo en GitHub).
 
-### 6. Abrí el Pull Request (una sola vez por grupo)
+### 6. Abrí el Pull Request (una sola vez por grupo y por entrega)
 
 1. En GitHub Desktop aparece un botón **Create Pull Request** después del push (o entrá al fork en github.com).
 2. Se abre GitHub en el navegador. Verificá que:
    - **base repository**: `coedomaximiliano/UADE-POO-2026-2`, rama `main`
-   - **head repository**: `TU-USUARIO/UADE-POO-2026-2`, rama `tpN-grupoN`
-3. Título del PR: `TP1: Grupo3` (número de TP + número de grupo).
+   - **head repository**: `TU-USUARIO/UADE-POO-2026-2`, rama `tpN-grupoN` (o `claseN-grupoN`)
+3. Título del PR: `TP1: Grupo3` o `Clase 1: Grupo3` (según corresponda).
 4. Click en **Create pull request**.
 
 ¡Listo! Ya está entregado. El docente va a revisar y puede pedir cambios o aprobarlo.
@@ -102,18 +104,27 @@ cd UADE-POO-2026-2
 git checkout -b tp1-grupo3
 ```
 
-(Reemplazá `tp1-grupo3` por `tpN-grupoN` según corresponda)
+(Reemplazá `tp1-grupo3` por `tpN-grupoN` si es un trabajo práctico, o por `claseN-grupoN` si es un ejercicio de clase, ej: `clase1-grupo3`)
 
-### 5. Creá la carpeta del grupo y agreguen sus archivos
+### 5. Ubicá o creá la carpeta del grupo
 
-Creá la carpeta `tps/tp1/grupo3/` (con el número de TP y el número de grupo) y copien ahí los archivos, entre todos los integrantes.
+- **Trabajo práctico**: ya existe la carpeta `TRABAJOS PRACTICOS/TPN/grupo N/` (ej: `TRABAJOS PRACTICOS/TP1/grupo 3/`). No la crees de nuevo, copien ahí los archivos entre todos los integrantes.
+- **Ejercicio de clase**: creá la carpeta `EJERCICIOS CLASE/ejercicio clase N/grupo N/` (ej: `EJERCICIOS CLASE/ejercicio clase 1/grupo 3/`) y copien ahí los archivos.
 
 ### 6. Agregá, commiteá y pusheá los cambios
 
 ```
-git add tps/tp1/grupo3
+git add "TRABAJOS PRACTICOS/TP1/grupo 3"
 git commit -m "TP1: Grupo3"
 git push origin tp1-grupo3
+```
+
+o, para un ejercicio de clase:
+
+```
+git add "EJERCICIOS CLASE/ejercicio clase 1/grupo 3"
+git commit -m "Clase 1: Grupo3"
+git push origin clase1-grupo3
 ```
 
 La primera vez que hagas `push` es posible que se abra una ventana del navegador pidiéndote iniciar sesión en GitHub. Iniciá sesión y el push va a continuar solo.
@@ -135,14 +146,15 @@ Esto se repite cada vez que alguien del grupo se sienta a programar, una vez que
    ```
    git checkout tpN-grupoN
    ```
+   (o `claseN-grupoN` si es un ejercicio de clase)
 2. **Traer lo que subieron los compañeros**, antes de tocar nada:
    ```
    git pull origin tpN-grupoN
    ```
-3. **Programar** dentro de `tps/tpN/grupoN/`.
+3. **Programar** dentro de `TRABAJOS PRACTICOS/TPN/grupo N/` o `EJERCICIOS CLASE/ejercicio clase N/grupo N/`, según corresponda.
 4. **Guardar el avance** con commits chicos y seguidos (no uno solo gigante al final):
    ```
-   git add tps/tpN/grupoN
+   git add "TRABAJOS PRACTICOS/TPN/grupo N"
    git commit -m "agrego validación de X"
    ```
 5. **Subir el avance**:
@@ -171,7 +183,7 @@ Pasa cuando vos y un compañero modificaron las mismas líneas de un mismo archi
 3. Editá el archivo a mano: dejá el código que corresponda (el tuyo, el de tu compañero, o una combinación de ambos) y borrá las marcas `<<<<<<<`, `=======` y `>>>>>>>`.
 4. Guardá el archivo y marcá el conflicto como resuelto:
    ```
-   git add tps/tpN/grupoN
+   git add "TRABAJOS PRACTICOS/TPN/grupo N"
    git commit
    ```
    (git arma un mensaje de commit por default para el merge; con aceptarlo alcanza)
@@ -189,7 +201,7 @@ Si no están seguros de qué versión dejar, hablen por fuera de git (WhatsApp, 
 No hace falta abrir un PR nuevo: alcanza con modificar los archivos en la carpeta local, y repetir el `commit` + `push` en la **misma rama**. El Pull Request se actualiza solo con los nuevos cambios. Si son varios integrantes pusheando, avisen en el grupo antes de hacer `push` para no pisarse.
 
 ```
-git add tps/tp1/grupo3
+git add "TRABAJOS PRACTICOS/TP1/grupo 3"
 git commit -m "TP1: correcciones"
 git push origin tp1-grupo3
 ```
@@ -198,7 +210,7 @@ git push origin tp1-grupo3
 
 ## Problemas comunes
 
-- **"Nombre de carpeta ya existe" o error al abrir PR**: asegurate de no haber tocado archivos fuera de la carpeta de tu grupo.
+- **"Nombre de carpeta ya existe" o error al abrir PR**: asegurate de no haber tocado archivos fuera de la carpeta de tu grupo. Para los TPs no crees una carpeta `grupo N` nueva, usá la que ya está en `TRABAJOS PRACTICOS/TPN/`.
 - **No me aparece el botón "Create pull request"**: entrá directamente a `https://github.com/TU-USUARIO/UADE-POO-2026-2/pull/new/tpN-grupoN`.
 - **Me pide usuario y contraseña y falla**: GitHub ya no acepta contraseña por línea de comandos. Dejá que se abra la ventana del navegador para iniciar sesión (Git Credential Manager), o usá GitHub Desktop.
 - **No puedo pushear al fork de mi compañero**: pedile que te agregue como colaborador en `Settings > Collaborators` de su fork.

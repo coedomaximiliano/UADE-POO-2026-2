@@ -1,0 +1,45 @@
+@startuml
+class Medico {
+  - nombre: String
+  - especialidad: String
+  - turnos: List<Turno>
+  + Medico(nombre: String, especialidad: String)
+  + getNombre(): String
+  + getEspecialidad(): String
+  + getTurnos(): List<Turno>
+  + agregarTurno(turno: Turno): void
+}
+
+class Paciente {
+  - nombre: String
+  - numeroHistoriaClinica: String
+  - turnos: List<Turno>
+  + Paciente(nombre: String, numeroHistoriaClinica: String)
+  + getNombre(): String
+  + getNumeroHistoriaClinica(): String
+  + getTurnos(): List<Turno>
+  + agregarTurno(turno: Turno): void
+}
+
+class Turno {
+  - fecha: LocalDate
+  - hora: LocalTime
+  - estado: EstadoTurno
+  - medico: Medico
+  - paciente: Paciente
+  + Turno(fecha: LocalDate, hora: LocalTime, medico: Medico, paciente: Paciente)
+  + atender(): void
+  + cancelar(): void
+  + mostrarDetalle(): void
+}
+
+enum EstadoTurno {
+  PENDIENTE
+  ATENDIDO
+  CANCELADO
+}
+
+Medico "1" -- "*" Turno : atiende
+Paciente "1" -- "*" Turno : solicita
+Turno --> EstadoTurno
+@enduml

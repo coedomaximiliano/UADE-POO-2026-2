@@ -43,7 +43,7 @@ public class Producto {
 
 	@Override
 	public String toString() {
-		return "Producto codigo%d | descripcion : %s | precio unitario:$.2f".formatted(code, description, unitPrice);
+		return "Producto codigo %d | descripcion : %s | precio unitario: %.2f".formatted(code, description, unitPrice);
 	}
 
 	@Override
@@ -54,6 +54,11 @@ public class Producto {
 		if (!(obj instanceof Producto other))
 			return false;
 		return this.code == other.code;
+	}
+
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(code);
 	}
 
 }

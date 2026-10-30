@@ -6,10 +6,10 @@ public class OrdenDeCompra {
 	private int code;
 	private	Producto product;
 	private int amount;
-	private Proovedor supplier;
+	private Proveedor supplier;
 	private LocalDate date;
 	
-	public OrdenDeCompra(int code, Producto product, int amount, Proovedor supplier,LocalDate date) {
+	public OrdenDeCompra(int code, Producto product, int amount, Proveedor supplier, LocalDate date) {
 		this.code = code;
 		this.product = product;
 		this.amount = amount;
@@ -35,10 +35,10 @@ public class OrdenDeCompra {
 	public void setAmount(int amount) {
 		this.amount = amount;
 	}
-	public Proovedor getSupplier() {
+	public Proveedor getSupplier() {
 		return supplier;
 	}
-	public void setSupplier(Proovedor supplier) {
+	public void setSupplier(Proveedor supplier) {
 		this.supplier = supplier;
 	}
 
@@ -55,6 +55,11 @@ public class OrdenDeCompra {
 		if (!(obj instanceof OrdenDeCompra other))
 			return false;
 		return this.code == other.code;
+	}
+
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(code);
 	}
 
 	public LocalDate getDate() {

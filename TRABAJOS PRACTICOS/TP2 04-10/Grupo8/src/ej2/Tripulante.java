@@ -2,7 +2,7 @@ package ej2;
 
 public class Tripulante extends Persona {
 	public enum job {
-		PILOT, COMUNICATION_OPERATOR, STEWARDESS, SECURITY
+		PILOT, COMUNICATION_OPERATOR, STEWARDESS, FLIGHT_ATTENDANT
 	}
 
 	private int employeeNumber;

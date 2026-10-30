@@ -58,16 +58,17 @@ public abstract class Persona {
 
 	@Override
 	public String toString() {
-		return "%s %s sexo:%s edad:%d".formatted(getName(), getSurname(), getGender(), getAge());
+		return "%s %s sexo: %s edad: %d".formatted(getName(), getSurname(), getGender(), getAge());
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
 			return true;
-		if (!(obj instanceof Persona other))
+		if (obj == null || getClass() != obj.getClass())
 			return false;
-		return DNI == other.DNI; 
+		Persona other = (Persona) obj;
+		return DNI == other.DNI;
 	}
 
 }

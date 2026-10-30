@@ -57,7 +57,7 @@ public class Main {
 	// b) Generacion de la orden de compra
 	private static void generarOrden(Scanner scanner, SistemaGestionProductos sistema) {
 		int dni = pedirEntero(scanner, "DNI del proveedor: ");
-		Proovedor proveedor = sistema.getSuppliers().get(dni);
+		Proveedor proveedor = sistema.getSuppliers().get(dni);
 		if (proveedor == null) {
 			System.out.println("No existe un proveedor con ese DNI.");
 			return;
@@ -93,7 +93,7 @@ public class Main {
 	// c) Consulta de las ordenes de un proveedor
 	private static void consultarOrdenes(Scanner scanner, SistemaGestionProductos sistema) {
 		int dni = pedirEntero(scanner, "DNI del proveedor: ");
-		Proovedor proveedor = sistema.getSuppliers().get(dni);
+		Proveedor proveedor = sistema.getSuppliers().get(dni);
 		if (proveedor == null) {
 			System.out.println("No existe un proveedor con ese DNI.");
 			return;
@@ -173,8 +173,8 @@ public class Main {
 		Set<Producto> deAna = new HashSet<>();
 		deAna.add(teclado);
 		deAna.add(mouse);
-		Proovedor ana = new Proovedor(30111222, "Facundo Garcia", deAna);
-		Proovedor luis = new Proovedor(28999888, "Luis Gomez", new HashSet<>());
+		Proveedor ana = new Proveedor(30111222, "Facundo Garcia", deAna);
+		Proveedor luis = new Proveedor(28999888, "Luis Gomez", new HashSet<>());
 		sistema.getSuppliers().put(ana.getDNI(), ana);
 		sistema.getSuppliers().put(luis.getDNI(), luis);
 	}

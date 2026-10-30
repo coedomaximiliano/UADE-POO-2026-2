@@ -40,6 +40,10 @@ public class Ciudad {
 			return false;
 		return Objects.equals(country, other.country) && Objects.equals(name, other.name);
 	}
-	
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(name, country);
+	}
 	
 }

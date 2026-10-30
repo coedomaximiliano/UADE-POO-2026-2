@@ -2,12 +2,12 @@ package ej1;
 
 import java.util.Set;
 
-public class Proovedor {
+public class Proveedor {
 	private int DNI;
 	private String fullName;
 	private Set<Producto> products;
 
-	public Proovedor(int DNI, String fullName, Set<Producto> products) {
+	public Proveedor(int DNI, String fullName, Set<Producto> products) {
 		this.DNI = DNI;
 		this.fullName = fullName;
 		this.products = products;
@@ -53,9 +53,14 @@ public class Proovedor {
 	{
 		if (this == obj)
 	        return true;
-		if (!(obj instanceof Proovedor other))
+		if (!(obj instanceof Proveedor other))
 			return false;
 		return this.DNI == other.DNI;
+	}
+
+	@Override
+	public int hashCode() {
+		return Integer.hashCode(DNI);
 	}
 
 }

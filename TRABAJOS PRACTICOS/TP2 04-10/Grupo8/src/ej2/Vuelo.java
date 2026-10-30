@@ -1,60 +1,38 @@
 package ej2;
 
-import java.util.List;
+import java.util.*;
 
 public class Vuelo {
-	private Ciudad origin;
-	private Ciudad destination;
-	private List<Ciudad> layovers;
+	private Aeropuerto origin;
+	private Aeropuerto destination;
+	private List<Aeropuerto> layovers;
 	private String flightCode;
 	private Avion plane;
-	private List<Pasajero> passangers;
+	private Map<String, Pasajero> seats = new HashMap<>();
 	private List<Tripulante> crew;
 
-	public Vuelo(Ciudad origin, Ciudad destination, List<Ciudad> layovers, String flightCode, Avion plane,
-			List<Pasajero> passangers, List<Tripulante> crew) {
+	public Vuelo(Aeropuerto origin, Aeropuerto destination, List<Aeropuerto> layovers, String flightCode, Avion plane, List<Tripulante> crew) {
+		validarTripulacion(crew);
 		this.origin = origin;
 		this.destination = destination;
 		this.layovers = layovers;
 		this.flightCode = flightCode;
 		this.plane = plane;
-		this.passangers = passangers;
 		this.crew = crew;
 	}
 
-	public Vuelo(Ciudad origin, Ciudad destination, String flightCode, Avion plane, List<Pasajero> passangers,
-			List<Tripulante> crew) {
-		this.origin = origin;
-		this.destination = destination;
-		this.flightCode = flightCode;
-		this.plane = plane;
-		this.passangers = passangers;
-		this.crew = crew;
+	public Vuelo(Aeropuerto origin, Aeropuerto destination, String flightCode, Avion plane, List<Tripulante> crew) {
+		this(origin, destination, new ArrayList<>(), flightCode, plane, crew);
 	}
 
-	public Ciudad getOrigin() {
-		return origin;
-	}
+	public Aeropuerto getOrigin() { return origin; }
+	public void setOrigin(Aeropuerto origin) { this.origin = origin; }
 
-	public void setOrigin(Ciudad origin) {
-		this.origin = origin;
-	}
+	public Aeropuerto getDestination() { return destination; }
+	public void setDestination(Aeropuerto destination) { this.destination = destination; }
 
-	public Ciudad getDestination() {
-		return destination;
-	}
-
-	public void setDestination(Ciudad destination) {
-		this.destination = destination;
-	}
-
-	public List<Ciudad> getLayovers() {
-		return layovers;
-	}
-
-	public void setLayovers(List<Ciudad> layovers) {
-		this.layovers = layovers;
-	}
+	public List<Aeropuerto> getLayovers() { return layovers; }
+	public void setLayovers(List<Aeropuerto> layovers) { this.layovers = layovers; }
 
 	public String getFlightCode() {
 		return flightCode;
@@ -72,19 +50,12 @@ public class Vuelo {
 		this.plane = plane;
 	}
 
-	public List<Pasajero> getPassangers() {
-		return passangers;
-	}
-
-	public void setPassangers(List<Pasajero> passangers) {
-		this.passangers = passangers;
-	}
-
 	public List<Tripulante> getCrew() {
 		return crew;
 	}
 
 	public void setCrew(List<Tripulante> crew) {
+		validarTripulacion(crew);
 		this.crew = crew;
 	}
 	
@@ -94,14 +65,14 @@ public class Vuelo {
 			return true;
 		if (!(obj instanceof Vuelo other))
 			return false;
-		return this.flightCode == other.flightCode;
+		return Objects.equals(flightCode, other.flightCode);
 	}
 	
 	private String stringifyLayovers()
 	{
 		String result = "";
-		for(Ciudad city : layovers)
-			result += "(%s) -> ".formatted(city);
+		for (Aeropuerto airport : layovers)
+			result += "(%s) -> ".formatted(airport.getCode());
 		return result;
 	}
 		
@@ -111,8 +82,36 @@ public class Vuelo {
 			return "Vuelo con escalas %s | Origen: %s | Destino: %s | Ruta Prevista: (%s) -> %s (%s)".formatted(flightCode,origin,destination,origin,stringifyLayovers(),destination);
 		return "Vuelo directo %s | Origen: %s | Destino: %s | Ruta Prevista: (%s) -> (%s)".formatted(flightCode,origin,destination,origin,destination);
 	}
-	
-	
-	
+
+
+	public void asignarAsiento(Pasajero pasajero, String asiento) {
+		if (seats.size() >= plane.getCapacity())
+			throw new IllegalStateException("El avion esta completo");
+		if (seats.containsKey(asiento))
+			throw new IllegalArgumentException("El asiento " + asiento + " ya esta ocupado");
+		if (seats.containsValue(pasajero))
+			throw new IllegalArgumentException("El pasajero ya tiene un asiento en este vuelo");
+		seats.put(asiento, pasajero);
+	}
+
+
+	private static int contar(List<Tripulante> crew, Tripulante.job puesto) {
+		int total = 0;
+		for (Tripulante t : crew)
+			if (t.getJob() == puesto)
+				total++;
+		return total;
+	}
+
+	private static void validarTripulacion(List<Tripulante> crew) {
+		if (contar(crew, Tripulante.job.PILOT) != 2)
+			throw new IllegalArgumentException("Se requieren exactamente 2 pilotos");
+		if (contar(crew, Tripulante.job.COMUNICATION_OPERATOR) != 1)
+			throw new IllegalArgumentException("Se requiere exactamente 1 operador de comunicaciones");
+		if (contar(crew, Tripulante.job.FLIGHT_ATTENDANT) != 2)
+			throw new IllegalArgumentException("Se requieren exactamente 2 comisarios de abordo");
+		if (contar(crew, Tripulante.job.STEWARDESS) != 4)
+			throw new IllegalArgumentException("Se requieren exactamente 4 azafatas");
+	}
 
 }

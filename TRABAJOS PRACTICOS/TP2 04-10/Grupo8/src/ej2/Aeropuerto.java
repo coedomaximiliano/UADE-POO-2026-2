@@ -39,7 +39,7 @@ public class Aeropuerto {
 
 	@Override
 	public String toString() {
-		return "Aeropuerto %s | Codigo: %s | Ciudad: %s".formatted(name,code,city)  ;
+		return "Aeropuerto %s | Codigo: %s | Ciudad: %s".formatted(name, code, city)  ;
 	}
 	
 

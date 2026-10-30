@@ -4,10 +4,10 @@ import java.util.HashMap;
 
 public class SistemaGestionProductos {
 	private HashMap<Integer, Producto> products;
-	private HashMap<Integer, Proovedor> suppliers;
+	private HashMap<Integer, Proveedor> suppliers;
 	private HashMap<Integer, OrdenDeCompra> purchaseOrders;
 
-	public SistemaGestionProductos(HashMap<Integer, Producto> products, HashMap<Integer, Proovedor> suppliers,
+	public SistemaGestionProductos(HashMap<Integer, Producto> products, HashMap<Integer, Proveedor> suppliers,
 			HashMap<Integer, OrdenDeCompra> purchaseOrders) {
 		this.products = products;
 		this.suppliers = suppliers;
@@ -22,11 +22,11 @@ public class SistemaGestionProductos {
 		this.products = products;
 	}
 
-	public HashMap<Integer, Proovedor> getSuppliers() {
+	public HashMap<Integer, Proveedor> getSuppliers() {
 		return suppliers;
 	}
 
-	public void setSuppliers(HashMap<Integer, Proovedor> suppliers) {
+	public void setSuppliers(HashMap<Integer, Proveedor> suppliers) {
 		this.suppliers = suppliers;
 	}
 
@@ -60,7 +60,7 @@ public class SistemaGestionProductos {
 		}
 	}
 
-	public int BuscarProovedores(Proovedor supplier) {
+	public int BuscarProovedores(Proveedor supplier) {
 		int result = 0;
 		for (OrdenDeCompra purchaseOrder : purchaseOrders.values()) {
 			if (purchaseOrder.getSupplier().equals(supplier))

@@ -1,0 +1,23 @@
+CÓDIGO DE EJEMPLO – CLASE 14 (Arquitectura, eventos y menús)
+==============================================================
+Cada carpeta corresponde a un ejemplo/ejercicio de la presentación, en el mismo orden.
+
+Compilar y ejecutar (desde la carpeta del ejemplo):
+    javac *.java
+    java NombreDeLaClase
+
+01-15  Swing (JFrame, JButton, JLabel, JTextField, JTable, JPanel, diálogos, EDT, SwingWorker)
+16-17  Consola y archivos (Scanner, BufferedReader / BufferedWriter). 17 usa entrada.txt y genera salida.txt
+18     JSON "a mano" (sin librerías)
+19     JSON con Gson  -> necesita gson-2.10.1.jar dentro de lib/
+         Descargar de: https://mvnrepository.com/artifact/com.google.code.gson/gson/2.10.1
+         Windows:  javac -cp ".;lib/gson-2.10.1.jar" *.java
+                   java  -cp ".;lib/gson-2.10.1.jar" EscribirJSONGson
+         (Linux/Mac: usar ":" en lugar de ";")
+20     MySQL -> crear la base con escuela.sql y usar el conector mysql-connector-j-8.3.0.jar
+         javac -cp ".;C:\mysql-connector\mysql-connector-j-8.3.0.jar" ConexionMySQL.java
+         java  -cp ".;C:\mysql-connector\mysql-connector-j-8.3.0.jar" ConexionMySQL
+         (ajustar usuario/contraseña en ConexionMySQL.java)
+21     SQLite -> copiar sqlite-jdbc-3.50.3.0.jar (de sqllite.rar) dentro de lib/
+         javac -cp ".;lib/sqlite-jdbc-3.50.3.0.jar" EjemploSQLite.java
+         java  -cp ".;lib/sqlite-jdbc-3.50.3.0.jar" EjemploSQLite

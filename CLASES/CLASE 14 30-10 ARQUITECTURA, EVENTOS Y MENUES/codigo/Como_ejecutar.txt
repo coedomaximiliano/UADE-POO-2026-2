@@ -1,0 +1,18 @@
+Codigo de la clase - Paradigma Orientado a Objetos (UADE)
+
+Cada carpeta es un proyecto independiente:
+  Ejemplos/      ejemplos de la teoria (cada archivo tiene su propio main)
+  Ejercicio1_... Ejercicio2_... Ejercicio3_...   resolucion de los ejercicios del PPT
+  Integrador_... resolucion del ejercicio integrador
+
+IntelliJ IDEA: File > Open > elegir la carpeta del ejercicio, marcar la carpeta
+(o "src" si existe) como Sources Root y ejecutar la clase que tiene el main.
+
+Por consola (JDK 17 o superior), parado dentro de la carpeta del ejercicio:
+  Sin paquetes:   javac *.java        y luego   java Main
+  Con carpeta src (paquetes):
+                  javac -d out $(find src -name "*.java")   (Windows: javac -d out src\*\*.java)
+                  java -cp out app.Main
+
+Los programas que leen o escriben archivos (.txt / .csv) los buscan en la
+carpeta desde donde se ejecutan.

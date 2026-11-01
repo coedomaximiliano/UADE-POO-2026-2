@@ -1,0 +1,394 @@
+@startuml TPO_diagrama_clases_entrega2
+' TPO Paradigma Orientado a Objetos - Grupo 3
+' Sistema de venta de entradas (Entrega 2 · post-correcciones)
+' Fuente: boleteria/src/main/java/ar/edu/uade/poo/grupo3/tpo/
+' Base conceptual: diagrama original grupo 3, sin estacionamiento ni clases auxiliares eliminadas en código.
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam packageStyle rectangle
+hide empty members
+left to right direction
+
+' ================== VISTA (Swing) ==================
+package "Vista · Swing" <<Rectangle>> {
+  class BoleteriaApp {
+    +{static} main(String[] args): void
+  }
+
+  class VentanaPrincipal {
+    -pantallas: Map<String, Pantalla>
+    +VentanaPrincipal(Boleteria boleteria)
+    +ir(String id): void
+  }
+
+  interface Pantalla {
+    +alMostrar(): void
+  }
+
+  class PanelInicio
+  class PanelConsultaSedes
+  class PanelAltaSede
+  class PanelModificacionSede
+  class PanelBajaSede
+  class PanelVenta
+  class PanelDevolucion
+  class PanelRegistroCliente
+  class PanelLoginCliente
+  class FormularioSector
+  class FacturaDialog
+
+  Pantalla <|.. PanelInicio
+  Pantalla <|.. PanelConsultaSedes
+  Pantalla <|.. PanelAltaSede
+  Pantalla <|.. PanelModificacionSede
+  Pantalla <|.. PanelBajaSede
+  Pantalla <|.. PanelVenta
+  Pantalla <|.. PanelDevolucion
+  Pantalla <|.. PanelRegistroCliente
+  Pantalla <|.. PanelLoginCliente
+}
+
+' ================== CONTROLADOR (MVC) ==================
+package "Controlador · MVC" <<Rectangle>> {
+  class SedeController {
+    -boleteria: Boleteria
+    +listar(String filtro): List<Sede>
+    +funcionesActivas(Sede sede): int
+    +alta(...): Sede
+    +modificarDatos(...): void
+    +agregarSector(...): void
+    +quitarSector(...): void
+    +baja(Sede sede): void
+  }
+
+  class VentaController {
+    -boleteria: Boleteria
+    -compra: Compra
+    +funcionesDisponibles(): List<Funcion>
+    +reservar(...): void
+    +aplicarPromocion(String codigo): Promocion
+    +pagar(MedioPago medio): Factura
+    +cancelar(): void
+    +devolverEntrada(...): Devolucion
+  }
+}
+
+' ================== MODELO · FACHADA ==================
+package "Modelo · Fachada" <<Rectangle>> {
+  class Boleteria <<Singleton>> {
+    -sedes: List<Sede>
+    -eventos: List<Evento>
+    -clientes: List<Cliente>
+    -compras: List<Compra>
+    -facturas: List<Factura>
+    -devoluciones: List<Devolucion>
+    -promociones: List<Promocion>
+    -paquetes: List<PaqueteVIP>
+    -reglas: List<ReglaDeVenta>
+    +{static} getInstancia(): Boleteria
+    +cargarDatos(): void
+    +guardarSedes(): void
+    +guardarClientes(): void
+    +registrarCuenta(...): Cliente
+    +iniciarSesion(...): Optional<Cliente>
+    +buscarFunciones(String texto): List<Funcion>
+    +iniciarCompra(...): Compra
+    +reservarAsientos(...): void
+    +confirmarCompra(...): Factura
+    +devolverEntrada(...): Devolucion
+    +liberarReservasVencidas(...): int
+  }
+}
+
+' ================== MODELO · INFRAESTRUCTURA ==================
+package "Modelo · Infraestructura" <<Rectangle>> {
+  class Sede {
+    -nombre: String
+    -direccion: String
+    -sectores: List<Sector>
+    +agregarSector(Sector s): void
+    +buscarSector(String codigo): Sector
+    +getCapacidadTotal(): int
+  }
+
+  abstract class Sector {
+    #codigo: String
+    #nombre: String
+    #piso: int
+    #distanciaEscenario: double
+    +calcularMultiplicador(): double
+    +{abstract} getCapacidad(): int
+    +{abstract} getTipo(): TipoSector
+    +{static} crear(...): Sector
+  }
+
+  class SectorNumerado {
+    -asientos: List<Asiento>
+    +generarAsientos(int filas, int asientosPorFila): void
+    +buscarAsiento(String fila, int numero): Asiento
+  }
+
+  class SectorGeneral {
+    -capacidad: int
+  }
+
+  class Asiento {
+    -fila: String
+    -numero: int
+    +esAdyacente(Asiento otro): boolean
+  }
+
+  enum TipoSector {
+    NUMERADO
+    GENERAL
+  }
+}
+
+' ================== MODELO · EVENTOS ==================
+package "Modelo · Eventos" <<Rectangle>> {
+  class Evento {
+    -id: int
+    -nombre: String
+    -descripcion: String
+    -duracionMinutos: int
+    -genero: String
+    -artistas: List<String>
+    -funciones: List<Funcion>
+    +agregarFuncion(Funcion f): void
+    +getFuncionesDisponibles(): List<Funcion>
+  }
+
+  class Funcion {
+    -id: int
+    -fechaHora: LocalDateTime
+    -precioBase: double
+    -estado: EstadoFuncion
+    -preventa: Preventa
+    -entradas: List<Entrada>
+    +estaDisponible(Asiento a): boolean
+    +lugaresLibres(Sector s): int
+    +estaEnPreventa(LocalDateTime ahora): boolean
+    +registrarEntrada(Entrada e): void
+  }
+
+  class Preventa {
+    -codigoAcceso: String
+    -fechaInicio: LocalDateTime
+    -fechaFin: LocalDateTime
+    +estaVigente(LocalDateTime ahora): boolean
+    +validarCodigo(String codigo): boolean
+  }
+
+  enum EstadoFuncion {
+    PROGRAMADA
+    AGOTADA
+    CANCELADA
+    FINALIZADA
+  }
+}
+
+' ================== MODELO · VENTAS ==================
+package "Modelo · Ventas" <<Rectangle>> {
+  class Cliente {
+    -dni: String
+    -nombre: String
+    -email: String
+    -hashContrasenia: String
+    -compras: List<Compra>
+    +{static} desdeArchivo(...): Cliente
+    +verificarContrasenia(String contrasenia): boolean
+    +agregarCompra(Compra c): void
+  }
+
+  class Compra {
+    +{static} MINUTOS_RESERVA: int = 5
+    +{static} CARGO_SERVICIO: double = 12
+    -nroCompra: int
+    -cliente: Cliente
+    -estado: EstadoCompra
+    -entradas: List<Entrada>
+    -paquetes: List<PaqueteVIP>
+    -promocion: Promocion
+    -medioPago: MedioPago
+    +agregarEntrada(...): Entrada
+    +calcularSubtotal(): double
+    +calcularDescuento(): double
+    +calcularTotal(): double
+    +confirmar(...): void
+    +cancelar(): void
+  }
+
+  class Entrada {
+    -codigo: String
+    -precio: double
+    -estado: EstadoEntrada
+    +calcularPrecio(): double
+    +pagar(double valorPagado): void
+    +puedeDevolverse(LocalDateTime ahora): boolean
+    +devolver(): void
+  }
+
+  class Factura {
+    -numero: String
+    -fecha: LocalDateTime
+    +generarTexto(): String
+    +guardar(Path carpeta): Path
+    +getTotal(): double
+  }
+
+  class Devolucion {
+    +{static} HORAS_LIMITE: int = 48
+    -fecha: LocalDateTime
+    -motivo: String
+    -montoReintegro: double
+    +calcularReintegro(): double
+  }
+
+  class PaqueteVIP {
+    -nombre: String
+    -precio: double
+    -cupo: int
+    +hayCupo(): boolean
+  }
+
+  enum EstadoCompra {
+    RESERVADA
+    CONFIRMADA
+    VENCIDA
+    CANCELADA
+  }
+
+  enum EstadoEntrada {
+    RESERVADA
+    PAGADA
+    ANULADA
+    DEVUELTA
+  }
+
+  enum MedioPago {
+    TARJETA_CREDITO
+    TARJETA_DEBITO
+    TRANSFERENCIA
+    EFECTIVO
+  }
+}
+
+' ================== MODELO · PROMOCIONES ==================
+package "Modelo · Promociones" <<Rectangle>> {
+  class Promocion {
+    -codigo: String
+    -porcentaje: double
+    -descripcion: String
+    +coincideCon(String codigo): boolean
+    +aplicaA(Compra c): boolean
+    +calcularDescuento(Compra c): double
+  }
+}
+
+' ================== MODELO · REGLAS ==================
+package "Modelo · Reglas" <<Rectangle>> {
+  interface ReglaDeVenta {
+    +validar(Compra c, Funcion f, Sector s, List<Asiento> seleccion, LocalDateTime ahora): void
+  }
+
+  class NoDejarAsientoSuelto
+  class RequiereCodigoPreventa
+}
+
+' ================== MODELO · EXCEPCIONES ==================
+package "Modelo · Excepciones" <<Rectangle>> {
+  class SeleccionInvalidaException <<exception>>
+  class ReservaVencidaException <<exception>>
+  class DevolucionNoPermitidaException <<exception>>
+}
+
+' ================== MODELO · PERSISTENCIA ==================
+package "Modelo · Persistencia" <<Rectangle>> {
+  interface "Repositorio<T>" as Repositorio {
+    +cargarTodos(): List<T>
+    +guardarTodos(List<T> elementos): void
+  }
+
+  class SedeRepositorioArchivo
+  class ClienteRepositorioArchivo
+  class EventoRepositorioArchivo
+}
+
+' ============ RELACIONES DE DOMINIO ============
+Sector <|-- SectorNumerado
+Sector <|-- SectorGeneral
+Sector --> TipoSector
+
+Sede "1" *-- "1..*" Sector
+SectorNumerado "1" *-- "1..*" Asiento
+
+Evento "1" *-- "1..*" Funcion
+Funcion "1" *-- "0..1" Preventa
+Funcion "*" --> "1" Sede
+Funcion "1" --> "*" Entrada
+
+Cliente "1" -- "*" Compra
+Compra "1" *-- "1..*" Entrada
+Compra "*" o-- "*" PaqueteVIP
+Compra "*" --> "0..1" Promocion
+Compra --> EstadoCompra
+Compra --> MedioPago
+
+Entrada "*" --> "1" Sector
+Entrada "*" --> "0..1" Asiento
+Entrada --> EstadoEntrada
+Entrada "1" <-- "0..1" Devolucion
+
+Factura "0..1" --> "1" Compra
+Funcion --> EstadoFuncion
+
+ReglaDeVenta <|.. NoDejarAsientoSuelto
+ReglaDeVenta <|.. RequiereCodigoPreventa
+
+Repositorio <|.. SedeRepositorioArchivo
+Repositorio <|.. ClienteRepositorioArchivo
+Repositorio <|.. EventoRepositorioArchivo
+SedeRepositorioArchivo ..> Sector : Sector.crear
+
+Boleteria --> "*" Sede
+Boleteria --> "*" Evento
+Boleteria --> "*" Cliente
+Boleteria --> "*" Compra
+Boleteria --> "*" Factura
+Boleteria --> "*" Devolucion
+Boleteria --> "*" Promocion
+Boleteria --> "*" PaqueteVIP
+Boleteria --> "*" ReglaDeVenta
+Boleteria --> SedeRepositorioArchivo
+Boleteria --> ClienteRepositorioArchivo
+Boleteria --> EventoRepositorioArchivo
+
+ReglaDeVenta ..> SeleccionInvalidaException
+Compra ..> ReservaVencidaException
+Boleteria ..> DevolucionNoPermitidaException
+
+' ============ RELACIONES MVC ============
+BoleteriaApp ..> VentanaPrincipal : crea
+VentanaPrincipal --> Boleteria
+VentanaPrincipal --> SedeController
+VentanaPrincipal --> VentaController
+
+SedeController --> Boleteria
+VentaController --> Boleteria
+
+PanelConsultaSedes --> SedeController
+PanelAltaSede --> SedeController
+PanelModificacionSede --> SedeController
+PanelBajaSede --> SedeController
+PanelAltaSede ..> FormularioSector
+PanelModificacionSede ..> FormularioSector
+
+PanelInicio --> Boleteria
+PanelRegistroCliente --> Boleteria
+PanelLoginCliente --> Boleteria
+PanelVenta --> VentaController
+PanelDevolucion --> VentaController
+PanelVenta ..> FacturaDialog
+
+@enduml

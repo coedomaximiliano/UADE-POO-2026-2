@@ -1,0 +1,9 @@
+# sede|tipo(NUM/GEN)|codigo|nombre|piso|distancia|filasXasientos o capacidad
+Esfera Las Vegas|NUM|FLR|Floor|0|5.0|8x16
+Esfera Las Vegas|NUM|100|Nivel 100|1|15.0|6x20
+Esfera Las Vegas|NUM|200|Nivel 200|2|30.0|6x24
+Esfera Las Vegas|NUM|300|Nivel 300|3|45.0|5x28
+Esfera Las Vegas|NUM|400|Nivel 400|4|60.0|5x30
+Estadio Monumental|GEN|CAMPO|Campo|0|10.0|5000
+Estadio Monumental|NUM|PSM|Platea San Martín|1|40.0|10x30
+Estadio Monumental|NUM|PBE|Platea Belgrano|1|40.0|10x30

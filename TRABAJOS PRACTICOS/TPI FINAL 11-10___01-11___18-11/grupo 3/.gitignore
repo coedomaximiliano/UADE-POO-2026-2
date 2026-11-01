@@ -1,0 +1,12 @@
+target/
+out/
+*.class
+.idea/
+*.iml
+.vscode/
+.DS_Store
+boleteria/datos/facturas/
+# Se generan al primer arranque con fechas relativas a hoy (DatosIniciales)
+boleteria/datos/eventos.txt
+boleteria/datos/funciones.txt
+boleteria/datos/factura_seq.txt

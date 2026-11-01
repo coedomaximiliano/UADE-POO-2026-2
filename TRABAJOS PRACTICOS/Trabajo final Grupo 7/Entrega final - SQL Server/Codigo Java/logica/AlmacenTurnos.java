@@ -2,7 +2,6 @@ package logica;
 
 import modelo.Turno;
 
-// Agrega las operaciones de escritura al contrato de consulta.
 public interface AlmacenTurnos extends ConsultaTurnos {
     int getProximoId();
 

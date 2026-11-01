@@ -63,7 +63,6 @@ public class DisponibilidadMedica {
         return disponibles;
     }
 
-    // Es estática porque solo necesita fecha y hora, no una instancia del servicio.
     private static class Franja {
         private final LocalDate fecha;
         private final LocalTime hora;

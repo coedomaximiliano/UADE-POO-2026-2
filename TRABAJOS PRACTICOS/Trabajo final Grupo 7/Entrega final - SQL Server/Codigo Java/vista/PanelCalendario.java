@@ -95,7 +95,6 @@ public class PanelCalendario extends JPanel {
 
     public void actualizarTurnos(ArrayList<Turno> nuevosTurnos) {
         turnos = new ArrayList<Turno>(nuevosTurnos);
-        // El criterio se usa solo acá, por eso la clase queda dentro del método.
         class OrdenAgenda implements Comparator<Turno> {
             @Override
             public int compare(Turno a, Turno b) {
@@ -222,7 +221,6 @@ public class PanelCalendario extends JPanel {
         return boton;
     }
 
-    // Cada celda usa recortar del calendario que la contiene.
     private class CeldaDia extends JButton {
         private final String tituloDia;
         private final int total;

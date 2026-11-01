@@ -7,7 +7,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-// Para los servicios que solo necesitan consultar la agenda.
 public interface ConsultaTurnos {
     Turno buscarPorId(int id);
 

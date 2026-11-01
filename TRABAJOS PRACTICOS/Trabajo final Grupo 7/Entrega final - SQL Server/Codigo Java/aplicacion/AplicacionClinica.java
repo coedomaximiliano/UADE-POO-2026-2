@@ -8,6 +8,8 @@ import logica.RegistroPacientes;
 import logica.RepositorioTurnos;
 
 public class AplicacionClinica {
+    public static final String VERSION = "5.0";
+
     private RegistroPacientes pacientes = new RegistroPacientes();
     private RegistroMedicos medicos = new RegistroMedicos();
     private AlmacenTurnos repositorio = new RepositorioTurnos();

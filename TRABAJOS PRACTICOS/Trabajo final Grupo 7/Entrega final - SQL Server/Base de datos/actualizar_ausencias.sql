@@ -1,3 +1,4 @@
+-- Clínica Grupo 7 - versión 5.0
 USE ClinicaGrupo7;
 GO
 SET ANSI_NULLS ON;

@@ -52,7 +52,7 @@ public class VentanaPrincipal extends JFrame {
     }
 
     public VentanaPrincipal(AplicacionClinica app) {
-        super("Gestion de turnos - Grupo 7 - SQL Server");
+        super("Gestion de turnos " + AplicacionClinica.VERSION + " - Grupo 7 - SQL Server");
         setName("ventanaClinica");
         setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
         setLayout(new BorderLayout(0, 0));
@@ -64,7 +64,7 @@ public class VentanaPrincipal extends JFrame {
         JLabel titulo = new JLabel("Clínica");
         titulo.setFont(titulo.getFont().deriveFont(Font.BOLD, 24f));
         nombre.add(titulo);
-        nombre.add(new JLabel("Gestión de turnos"));
+        nombre.add(new JLabel("Gestión de turnos · v" + AplicacionClinica.VERSION));
         marca.add(nombre, BorderLayout.CENTER);
         JPanel reloj = new JPanel(new java.awt.GridLayout(2, 1, 0, 3));
         JLabel fechaSistema = new JLabel("", SwingConstants.RIGHT),

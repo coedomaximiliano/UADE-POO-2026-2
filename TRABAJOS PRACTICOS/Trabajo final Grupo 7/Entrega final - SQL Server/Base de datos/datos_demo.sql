@@ -1,4 +1,5 @@
-﻿USE ClinicaGrupo7;
+-- Clínica Grupo 7 - versión 5.0
+USE ClinicaGrupo7;
 GO
 SET NOCOUNT ON;
 SET XACT_ABORT ON;

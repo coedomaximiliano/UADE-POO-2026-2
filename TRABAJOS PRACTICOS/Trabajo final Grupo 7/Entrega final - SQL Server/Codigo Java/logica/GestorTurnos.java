@@ -12,14 +12,14 @@ import java.util.ArrayList;
 public class GestorTurnos {
     private RegistroPacientes pacientes;
     private RegistroMedicos medicos;
-    private RepositorioTurnos repositorio;
+    private AlmacenTurnos repositorio;
     private Notificador notificador;
     private ValidadorTurno validador;
 
     public GestorTurnos(
             RegistroPacientes pacientes,
             RegistroMedicos medicos,
-            RepositorioTurnos repositorio,
+            AlmacenTurnos repositorio,
             Notificador notificador) {
         this.pacientes = pacientes;
         this.medicos = medicos;

@@ -95,15 +95,15 @@ public class PanelCalendario extends JPanel {
 
     public void actualizarTurnos(ArrayList<Turno> nuevosTurnos) {
         turnos = new ArrayList<Turno>(nuevosTurnos);
-        // En cada dia se leen primero los turnos mas tempranos.
-        Collections.sort(
-                turnos,
-                new Comparator<Turno>() {
-                    public int compare(Turno a, Turno b) {
-                        int porFecha = a.getFecha().compareTo(b.getFecha());
-                        return porFecha != 0 ? porFecha : a.getHora().compareTo(b.getHora());
-                    }
-                });
+        // El criterio se usa solo acá, por eso la clase queda dentro del método.
+        class OrdenAgenda implements Comparator<Turno> {
+            @Override
+            public int compare(Turno a, Turno b) {
+                int porFecha = a.getFecha().compareTo(b.getFecha());
+                return porFecha != 0 ? porFecha : a.getHora().compareTo(b.getHora());
+            }
+        }
+        Collections.sort(turnos, new OrdenAgenda());
         dibujarMes();
     }
 
@@ -193,57 +193,7 @@ public class PanelCalendario extends JPanel {
                 cantidad == 0
                         ? "<br>Sin turnos. Clic para consultar o reservar.</html>"
                         : "</html>";
-        final String tituloDia = numero;
-        final int total = cantidad;
-        JButton boton =
-                new JButton(texto) {
-                    protected void paintComponent(Graphics grafico) {
-                        // Se adapta al alto de la celda: el total siempre se puede leer.
-                        Graphics2D g = (Graphics2D) grafico.create();
-                        g.setRenderingHint(
-                                RenderingHints.KEY_TEXT_ANTIALIASING,
-                                RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-                        g.setColor(getBackground());
-                        g.fillRect(0, 0, getWidth(), getHeight());
-                        g.setFont(getFont().deriveFont(Font.BOLD, 12f));
-                        g.setColor(
-                                hoy
-                                        ? EstiloClinica.PRIMARIO
-                                        : esteMes ? EstiloClinica.TEXTO : EstiloClinica.SECUNDARIO);
-                        g.drawString(
-                                recortar(
-                                        g,
-                                        tituloDia + (total > 0 ? " · " + total + " turnos" : ""),
-                                        getWidth() - 12),
-                                6,
-                                17);
-                        g.setFont(getFont().deriveFont(Font.PLAIN, 12f));
-                        int visibles = Math.min(2, Math.max(0, (getHeight() - 24) / 17));
-                        for (int i = 0; i < Math.min(visibles, total); i++) {
-                            Turno turno = turnosDelDia.get(i);
-                            g.setColor(
-                                    turno.getEstado() == EstadoTurno.CANCELADO
-                                            ? EstiloClinica.PELIGRO
-                                            : turno.getEstado() == EstadoTurno.ATENDIDO
-                                                    ? Color.decode("#166534")
-                                                    : EstiloClinica.PRIMARIO);
-                            int y = 35 + i * 17;
-                            g.fillOval(6, y - 7, 5, 5);
-                            g.drawString(
-                                    recortar(
-                                            g,
-                                            turno.getHora() + " " + turno.getPaciente().getNombre(),
-                                            getWidth() - 23),
-                                    16,
-                                    y);
-                        }
-                        if (hasFocus()) {
-                            g.setColor(EstiloClinica.PRIMARIO);
-                            g.drawRect(2, 2, getWidth() - 5, getHeight() - 5);
-                        }
-                        g.dispose();
-                    }
-                };
+        JButton boton = new CeldaDia(texto, numero, cantidad, hoy, esteMes, turnosDelDia);
         boton.setName("dia-" + fecha);
         boton.setActionCommand(fecha.toString());
         boton.setUI(
@@ -270,6 +220,77 @@ public class PanelCalendario extends JPanel {
         boton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         boton.addActionListener(seleccionarDia);
         return boton;
+    }
+
+    // Cada celda usa recortar del calendario que la contiene.
+    private class CeldaDia extends JButton {
+        private final String tituloDia;
+        private final int total;
+        private final boolean hoy;
+        private final boolean esteMes;
+        private final ArrayList<Turno> turnosDelDia;
+
+        private CeldaDia(
+                String texto,
+                String tituloDia,
+                int total,
+                boolean hoy,
+                boolean esteMes,
+                ArrayList<Turno> turnosDelDia) {
+            super(texto);
+            this.tituloDia = tituloDia;
+            this.total = total;
+            this.hoy = hoy;
+            this.esteMes = esteMes;
+            this.turnosDelDia = new ArrayList<Turno>(turnosDelDia);
+        }
+
+        @Override
+        protected void paintComponent(Graphics grafico) {
+            // Se adapta al alto de la celda: el total siempre se puede leer.
+            Graphics2D g = (Graphics2D) grafico.create();
+            g.setRenderingHint(
+                    RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g.setColor(getBackground());
+            g.fillRect(0, 0, getWidth(), getHeight());
+            g.setFont(getFont().deriveFont(Font.BOLD, 12f));
+            g.setColor(
+                    hoy
+                            ? EstiloClinica.PRIMARIO
+                            : esteMes ? EstiloClinica.TEXTO : EstiloClinica.SECUNDARIO);
+            g.drawString(
+                    recortar(
+                            g,
+                            tituloDia + (total > 0 ? " · " + total + " turnos" : ""),
+                            getWidth() - 12),
+                    6,
+                    17);
+            g.setFont(getFont().deriveFont(Font.PLAIN, 12f));
+            int visibles = Math.min(2, Math.max(0, (getHeight() - 24) / 17));
+            for (int i = 0; i < Math.min(visibles, total); i++) {
+                Turno turno = turnosDelDia.get(i);
+                g.setColor(
+                        turno.getEstado() == EstadoTurno.CANCELADO
+                                ? EstiloClinica.PELIGRO
+                                : turno.getEstado() == EstadoTurno.ATENDIDO
+                                        ? Color.decode("#166534")
+                                        : EstiloClinica.PRIMARIO);
+                int y = 35 + i * 17;
+                g.fillOval(6, y - 7, 5, 5);
+                g.drawString(
+                        recortar(
+                                g,
+                                turno.getHora() + " " + turno.getPaciente().getNombre(),
+                                getWidth() - 23),
+                        16,
+                        y);
+            }
+            if (hasFocus()) {
+                g.setColor(EstiloClinica.PRIMARIO);
+                g.drawRect(2, 2, getWidth() - 5, getHeight() - 5);
+            }
+            g.dispose();
+        }
     }
 
     private String escapar(String texto) {

@@ -1,5 +1,6 @@
 package aplicacion;
 
+import logica.AlmacenTurnos;
 import logica.GestorTurnos;
 import logica.NotificadorEmail;
 import logica.RegistroMedicos;
@@ -9,7 +10,7 @@ import logica.RepositorioTurnos;
 public class AplicacionClinica {
     private RegistroPacientes pacientes = new RegistroPacientes();
     private RegistroMedicos medicos = new RegistroMedicos();
-    private RepositorioTurnos repositorio = new RepositorioTurnos();
+    private AlmacenTurnos repositorio = new RepositorioTurnos();
     private NotificadorEmail notificador = new NotificadorEmail();
     private GestorTurnos gestor = new GestorTurnos(pacientes, medicos, repositorio, notificador);
 

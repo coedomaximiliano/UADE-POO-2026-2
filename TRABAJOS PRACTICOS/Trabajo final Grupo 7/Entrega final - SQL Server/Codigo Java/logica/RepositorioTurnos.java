@@ -9,13 +9,14 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 
-public class RepositorioTurnos {
+public class RepositorioTurnos implements AlmacenTurnos {
     private static final String CONSULTA =
             "SELECT t.*,p.nombre pn,p.email pe,p.historia,"
                     + "m.nombre mn,m.dni mdni,m.email me,m.especialidad,m.consultorio,p.cabecera FROM dbo.Turnos t "
                     + "JOIN dbo.Pacientes p ON t.paciente_dni=p.dni "
                     + "JOIN dbo.Medicos m ON t.medico_matricula=m.matricula ";
 
+    @Override
     public int getProximoId() {
         // SQL Server asigna el numero para evitar IDs repetidos entre ventanas.
         try (Connection c = ConexionSQL.abrir();
@@ -29,6 +30,7 @@ public class RepositorioTurnos {
         }
     }
 
+    @Override
     public void guardar(Turno turno) {
         if (turno == null) throw new IllegalArgumentException("Falta el turno.");
         String sql =
@@ -96,27 +98,33 @@ public class RepositorioTurnos {
         }
     }
 
+    @Override
     public Turno buscarPorId(int id) {
         ArrayList<Turno> lista = buscar("WHERE t.id=?", id);
         return lista.isEmpty() ? null : lista.get(0);
     }
 
+    @Override
     public ArrayList<Turno> consultar() {
         return buscar("", null);
     }
 
+    @Override
     public ArrayList<Turno> consultarPorMedico(String matricula) {
         return buscar("WHERE t.medico_matricula=?", matricula);
     }
 
+    @Override
     public ArrayList<Turno> consultarPorPaciente(String dni) {
         return buscar("WHERE t.paciente_dni=?", dni);
     }
 
+    @Override
     public ArrayList<Turno> consultarPorFecha(LocalDate fecha) {
         return buscar("WHERE t.fecha=?", Date.valueOf(fecha));
     }
 
+    @Override
     public boolean disponible(Medico medico, LocalDate fecha, LocalTime hora) {
         String sql =
                 "SELECT COUNT(*) FROM dbo.Turnos WHERE medico_matricula=? AND fecha=? AND hora=? AND estado<>'CANCELADO'";
@@ -134,6 +142,7 @@ public class RepositorioTurnos {
         }
     }
 
+    @Override
     public void actualizarEstado(Turno turno) throws TurnoException {
         // Se actualiza solo si sigue pendiente. Otra ventana puede haberlo cambiado.
         String sql = "UPDATE dbo.Turnos SET estado=? WHERE id=? AND estado='PENDIENTE'";
@@ -148,6 +157,7 @@ public class RepositorioTurnos {
         }
     }
 
+    @Override
     public void reasignar(Turno anterior, Turno nuevo) throws TurnoException {
         // Una sola actualización: si el nuevo horario falla, el turno anterior sigue intacto.
         String sql =

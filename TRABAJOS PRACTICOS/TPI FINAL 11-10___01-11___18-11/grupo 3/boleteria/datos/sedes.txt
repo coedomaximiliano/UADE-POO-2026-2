@@ -1,0 +1,3 @@
+# nombre|direccion
+Esfera Las Vegas|255 Sands Ave, Las Vegas, NV
+Estadio Monumental|Av. Figueroa Alcorta 7597, CABA

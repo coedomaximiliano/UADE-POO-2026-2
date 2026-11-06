@@ -1,0 +1,4 @@
+# dni|nombre|email|hashContraseña(SHA-256)
+30111222|Ana García|ana@mail.com|4dac5e55f6f38a0e9cb013daeefa2df4bcf2cea4cd36914b119fd5944246da60
+28999111|Bruno Díaz|bruno@mail.com|4dac5e55f6f38a0e9cb013daeefa2df4bcf2cea4cd36914b119fd5944246da60
+35444777|Carla Méndez|carla@mail.com|4dac5e55f6f38a0e9cb013daeefa2df4bcf2cea4cd36914b119fd5944246da60

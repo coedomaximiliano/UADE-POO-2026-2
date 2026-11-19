@@ -14,36 +14,29 @@ import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.SectorGeneral;
 import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.SectorNumerado;
 import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.Sede;
 import ar.edu.uade.poo.grupo3.tpo.modelo.persistencia.ClienteRepositorioArchivo;
-import ar.edu.uade.poo.grupo3.tpo.modelo.persistencia.EventoRepositorioArchivo;
 import ar.edu.uade.poo.grupo3.tpo.modelo.persistencia.Repositorio;
 import ar.edu.uade.poo.grupo3.tpo.modelo.persistencia.SedeRepositorioArchivo;
 import ar.edu.uade.poo.grupo3.tpo.modelo.promociones.Promocion;
-import ar.edu.uade.poo.grupo3.tpo.modelo.reglas.ReglaDeVenta;
 import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Cliente;
 import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Compra;
 import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Devolucion;
 import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Entrada;
 import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Factura;
-import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.PaqueteVIP;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 /**
  * Fachada del modelo: patrón Singleton + Controlador (GRASP), única puerta de entrada a las operaciones del sistema.
- * En términos de MVC es parte del modelo; los controladores de MVC (SedeController, VentaController) y la demo
- * por consola le hablan a la Boleteria, nunca directo al resto del dominio.
+ * En términos de MVC es parte del modelo; los controladores de MVC (SedeController, VentaController)
+ * le hablan a la Boleteria, nunca directo al resto del dominio.
  */
 public final class Boleteria {
 
@@ -52,7 +45,6 @@ public final class Boleteria {
     private final Path directorioDatos;
     private final Repositorio<Sede> repoSedes;
     private final Repositorio<Cliente> repoClientes;
-    private final EventoRepositorioArchivo repoEventos;
 
     private final List<Sede> sedes = new ArrayList<>();
     private final List<Evento> eventos = new ArrayList<>();
@@ -60,21 +52,12 @@ public final class Boleteria {
     private final List<Compra> compras = new ArrayList<>();
     private final List<Factura> facturas = new ArrayList<>();
     private final List<Devolucion> devoluciones = new ArrayList<>();
-    private final List<ReglaDeVenta> reglas = new ArrayList<>();
     private final List<Promocion> promociones = new ArrayList<>();
-    private final List<PaqueteVIP> paquetes = new ArrayList<>();
-
-    /** Cliente autenticado en la app Swing; null si no hay sesión. */
-    private Cliente clienteSesion;
-
-    private static final Pattern PATRON_NUMERO_FACTURA =
-            Pattern.compile("FAC-0001-(\\d{8})\\.txt", Pattern.CASE_INSENSITIVE);
 
     private Boleteria(Path directorioDatos) {
         this.directorioDatos = directorioDatos;
         this.repoSedes = new SedeRepositorioArchivo(directorioDatos);
         this.repoClientes = new ClienteRepositorioArchivo(directorioDatos);
-        this.repoEventos = new EventoRepositorioArchivo(directorioDatos);
     }
 
     public static synchronized Boleteria getInstancia() {
@@ -91,9 +74,6 @@ public final class Boleteria {
         sedes.addAll(repoSedes.cargarTodos());
         clientes.clear();
         clientes.addAll(repoClientes.cargarTodos());
-        repoEventos.prepararCarga(sedes);
-        eventos.clear();
-        eventos.addAll(repoEventos.cargarTodos());
         cargarSecuenciaFactura();
     }
 
@@ -103,10 +83,6 @@ public final class Boleteria {
 
     public void guardarClientes() throws IOException {
         repoClientes.guardarTodos(clientes);
-    }
-
-    public void guardarEventos() throws IOException {
-        repoEventos.guardarTodos(eventos);
     }
 
     public Path getDirectorioDatos() {
@@ -119,15 +95,21 @@ public final class Boleteria {
         return Collections.unmodifiableList(sedes);
     }
 
-    public Optional<Sede> buscarSede(String nombre) {
-        return sedes.stream().filter(s -> s.getNombre().equalsIgnoreCase(nombre.trim())).findFirst();
+    /** Devuelve null si no existe. */
+    public Sede buscarSede(String nombre) {
+        for (Sede s : sedes) {
+            if (s.getNombre().equalsIgnoreCase(nombre.trim())) {
+                return s;
+            }
+        }
+        return null;
     }
 
     public void agregarSede(Sede sede) {
         if (sede == null) {
             throw new IllegalArgumentException("La sede no puede ser nula");
         }
-        if (buscarSede(sede.getNombre()).isPresent()) {
+        if (buscarSede(sede.getNombre()) != null) {
             throw new IllegalArgumentException("Ya existe una sede llamada " + sede.getNombre());
         }
         if (sede.getSectores().isEmpty()) {
@@ -137,8 +119,8 @@ public final class Boleteria {
     }
 
     public void modificarSede(Sede sede, String nuevoNombre, String nuevaDireccion) {
-        Optional<Sede> otra = buscarSede(nuevoNombre);
-        if (otra.isPresent() && otra.get() != sede) {
+        Sede otra = buscarSede(nuevoNombre);
+        if (otra != null && otra != sede) {
             throw new IllegalArgumentException("Ya existe otra sede llamada " + nuevoNombre);
         }
         sede.setNombre(nuevoNombre);
@@ -164,10 +146,16 @@ public final class Boleteria {
     }
 
     public List<Funcion> getFuncionesActivas(Sede sede) {
-        return eventos.stream().flatMap(e -> e.getFunciones().stream())
-                .filter(f -> f.getSede() == sede)
-                .filter(f -> f.getEstado() == EstadoFuncion.PROGRAMADA || f.getEstado() == EstadoFuncion.AGOTADA)
-                .toList();
+        List<Funcion> activas = new ArrayList<>();
+        for (Evento e : eventos) {
+            for (Funcion f : e.getFunciones()) {
+                if (f.getSede() == sede
+                        && (f.getEstado() == EstadoFuncion.PROGRAMADA || f.getEstado() == EstadoFuncion.AGOTADA)) {
+                    activas.add(f);
+                }
+            }
+        }
+        return activas;
     }
 
     private void verificarSinFunciones(Sede sede, String accion) {
@@ -178,41 +166,33 @@ public final class Boleteria {
         }
     }
 
-    // ------------------------------------------------------------------ cuentas
+    // ------------------------------------------------------------------ clientes
 
-    public Cliente registrarCuenta(String dni, String nombre, String email, String contrasenia) {
-        Cliente cliente = new Cliente(dni, nombre, email, contrasenia);
-        if (buscarClientePorEmail(cliente.getEmail()).isPresent()) {
+    public Cliente registrarCliente(String dni, String nombre, String email) {
+        Cliente cliente = new Cliente(dni, nombre, email);
+        if (buscarClientePorEmail(cliente.getEmail()) != null) {
             throw new IllegalArgumentException("Ya hay una cuenta con el email " + cliente.getEmail());
         }
-        if (clientes.stream().anyMatch(c -> c.getDni().equals(cliente.getDni()))) {
-            throw new IllegalArgumentException("Ya hay una cuenta con el DNI " + cliente.getDni());
+        for (Cliente c : clientes) {
+            if (c.getDni().equals(cliente.getDni())) {
+                throw new IllegalArgumentException("Ya hay una cuenta con el DNI " + cliente.getDni());
+            }
         }
         clientes.add(cliente);
         return cliente;
     }
 
-    /** Devuelve el cliente si el email y la contraseña coinciden; vacío si no. Deja la sesión activa en la UI. */
-    public Optional<Cliente> iniciarSesion(String email, String contrasenia) {
-        Optional<Cliente> cliente = buscarClientePorEmail(email)
-                .filter(c -> c.verificarContrasenia(contrasenia));
-        cliente.ifPresent(c -> clienteSesion = c);
-        return cliente;
-    }
-
-    public Optional<Cliente> getClienteSesion() {
-        return Optional.ofNullable(clienteSesion);
-    }
-
-    public void cerrarSesion() {
-        clienteSesion = null;
-    }
-
-    public Optional<Cliente> buscarClientePorEmail(String email) {
+    /** Devuelve null si no existe. */
+    public Cliente buscarClientePorEmail(String email) {
         if (email == null) {
-            return Optional.empty();
+            return null;
         }
-        return clientes.stream().filter(c -> c.getEmail().equalsIgnoreCase(email.trim())).findFirst();
+        for (Cliente c : clientes) {
+            if (c.getEmail().equalsIgnoreCase(email.trim())) {
+                return c;
+            }
+        }
+        return null;
     }
 
     public List<Cliente> getClientes() {
@@ -229,29 +209,28 @@ public final class Boleteria {
         return Collections.unmodifiableList(eventos);
     }
 
-    public void agregarRegla(ReglaDeVenta regla) {
-        reglas.add(regla);
-    }
-
     public void agregarPromocion(Promocion promocion) {
         promociones.add(promocion);
     }
 
-    public void agregarPaquete(PaqueteVIP paquete) {
-        paquetes.add(paquete);
-    }
-
-    public List<PaqueteVIP> getPaquetes() {
-        return Collections.unmodifiableList(paquetes);
-    }
-
     public List<Funcion> buscarFunciones(String texto) {
         String filtro = texto == null ? "" : texto.trim().toLowerCase();
-        return eventos.stream().flatMap(e -> e.getFuncionesDisponibles().stream())
-                .filter(f -> f.getEvento().getNombre().toLowerCase().contains(filtro)
-                        || f.getSede().getNombre().toLowerCase().contains(filtro))
-                .sorted(Comparator.comparing(Funcion::getFechaHora))
-                .toList();
+        List<Funcion> encontradas = new ArrayList<>();
+        for (Evento e : eventos) {
+            for (Funcion f : e.getFuncionesDisponibles()) {
+                if (f.getEvento().getNombre().toLowerCase().contains(filtro)
+                        || f.getSede().getNombre().toLowerCase().contains(filtro)) {
+                    encontradas.add(f);
+                }
+            }
+        }
+        encontradas.sort(new Comparator<Funcion>() {
+            @Override
+            public int compare(Funcion a, Funcion b) {
+                return a.getFechaHora().compareTo(b.getFechaHora());
+            }
+        });
+        return encontradas;
     }
 
     // ------------------------------------------------------------------ flujo de compra
@@ -261,13 +240,13 @@ public final class Boleteria {
         return funcion.getAsientosLibres(sector);
     }
 
-    public Compra iniciarCompra(Cliente cliente, String codigoPreventa, LocalDateTime ahora) {
-        Compra compra = new Compra(cliente, codigoPreventa, ahora);
+    public Compra iniciarCompra(Cliente cliente, LocalDateTime ahora) {
+        Compra compra = new Compra(cliente, ahora);
         compras.add(compra);
         return compra;
     }
 
-    /** Reserva asientos de un sector numerado. Antes valida todas las reglas de venta. */
+    /** Reserva asientos de un sector numerado. */
     public void reservarAsientos(Compra compra, Funcion funcion, SectorNumerado sector, List<Asiento> seleccion,
                                  LocalDateTime ahora) throws SeleccionInvalidaException {
         if (seleccion == null || seleccion.isEmpty()) {
@@ -279,7 +258,6 @@ public final class Boleteria {
                 throw new SeleccionInvalidaException("El asiento " + asiento + " ya no está disponible.");
             }
         }
-        validarReglas(compra, funcion, sector, seleccion, ahora);
         for (Asiento asiento : seleccion) {
             compra.agregarEntrada(funcion, sector, asiento);
         }
@@ -296,28 +274,19 @@ public final class Boleteria {
             throw new SeleccionInvalidaException("Quedan solo " + funcion.lugaresLibres(sector)
                     + " lugares en " + sector.getNombre() + ".");
         }
-        validarReglas(compra, funcion, sector, List.of(), ahora);
         for (int i = 0; i < cantidad; i++) {
             compra.agregarEntrada(funcion, sector, null);
         }
     }
 
-    private void validarReglas(Compra compra, Funcion funcion, Sector sector, List<Asiento> seleccion,
-                               LocalDateTime ahora) throws SeleccionInvalidaException {
-        for (ReglaDeVenta regla : reglas) {
-            regla.validar(compra, funcion, sector, seleccion, ahora);
-        }
-    }
-
-    public void agregarPaquete(Compra compra, PaqueteVIP paquete) {
-        compra.agregarPaquete(paquete);
-    }
-
     public void aplicarCodigoPromocional(Compra compra, String codigo) {
-        Promocion promocion = promociones.stream().filter(p -> p.coincideCon(codigo))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("El código promocional " + codigo + " no existe"));
-        compra.aplicarPromocion(promocion);
+        for (Promocion promocion : promociones) {
+            if (promocion.coincideCon(codigo)) {
+                compra.aplicarPromocion(promocion);
+                return;
+            }
+        }
+        throw new IllegalArgumentException("El código promocional " + codigo + " no existe");
     }
 
     /**
@@ -332,7 +301,6 @@ public final class Boleteria {
         facturas.add(factura);
         try {
             factura.guardar(directorioDatos.resolve("facturas"));
-            guardarSecuenciaFactura();
         } catch (IOException e) {
             // La venta ya está hecha: si falla el archivo no se pierde la compra, solo se avisa.
             System.err.println("No se pudo guardar la factura " + factura.getNumero() + ": " + e.getMessage());
@@ -340,45 +308,13 @@ public final class Boleteria {
         return factura;
     }
 
-    private void cargarSecuenciaFactura() {
-        Path archivo = directorioDatos.resolve("factura_seq.txt");
-        try {
-            if (Files.exists(archivo)) {
-                int proximo = Integer.parseInt(Files.readString(archivo, StandardCharsets.UTF_8).trim());
-                if (proximo >= 1) {
-                    Factura.establecerSecuencia(proximo);
-                }
-                return;
-            }
-            int desdeDisco = inferirProximaSecuenciaDesdeFacturas();
-            if (desdeDisco > 1) {
-                Factura.establecerSecuencia(desdeDisco);
-            }
-        } catch (IOException | NumberFormatException e) {
-            System.err.println("No se pudo leer la secuencia de facturas: " + e.getMessage());
-        }
-    }
-
-    private int inferirProximaSecuenciaDesdeFacturas() throws IOException {
+    /** Sigue la numeración de facturas: si ya hay N guardadas en datos/facturas, la próxima es la N+1. */
+    private void cargarSecuenciaFactura() throws IOException {
         Path carpeta = directorioDatos.resolve("facturas");
-        if (!Files.isDirectory(carpeta)) {
-            return 1;
+        if (Files.isDirectory(carpeta)) {
+            String[] archivos = carpeta.toFile().list();
+            Factura.establecerSecuencia(archivos.length + 1);
         }
-        int max = 0;
-        try (var archivos = Files.list(carpeta)) {
-            for (Path path : archivos.filter(p -> p.getFileName().toString().startsWith("FAC-")).toList()) {
-                Matcher m = PATRON_NUMERO_FACTURA.matcher(path.getFileName().toString());
-                if (m.matches()) {
-                    max = Math.max(max, Integer.parseInt(m.group(1)));
-                }
-            }
-        }
-        return max + 1;
-    }
-
-    private void guardarSecuenciaFactura() throws IOException {
-        Path archivo = directorioDatos.resolve("factura_seq.txt");
-        Files.writeString(archivo, Integer.toString(Factura.proximaSecuencia()), StandardCharsets.UTF_8);
     }
 
     public void cancelarCompra(Compra compra) {
@@ -401,8 +337,10 @@ public final class Boleteria {
 
     public Devolucion devolverEntrada(String codigoEntrada, String motivo, LocalDateTime ahora)
             throws DevolucionNoPermitidaException {
-        Entrada entrada = buscarEntrada(codigoEntrada)
-                .orElseThrow(() -> new DevolucionNoPermitidaException("No existe la entrada " + codigoEntrada));
+        Entrada entrada = buscarEntrada(codigoEntrada);
+        if (entrada == null) {
+            throw new DevolucionNoPermitidaException("No existe la entrada " + codigoEntrada);
+        }
         if (!entrada.puedeDevolverse(ahora)) {
             throw new DevolucionNoPermitidaException("La entrada " + codigoEntrada + " no se puede devolver: "
                     + "tiene que estar pagada y faltar al menos " + Devolucion.HORAS_LIMITE
@@ -414,11 +352,19 @@ public final class Boleteria {
         return devolucion;
     }
 
-    public Optional<Entrada> buscarEntrada(String codigo) {
-        return compras.stream().filter(c -> c.getEstado() == EstadoCompra.CONFIRMADA)
-                .flatMap(c -> c.getEntradas().stream())
-                .filter(e -> e.getCodigo().equalsIgnoreCase(codigo == null ? "" : codigo.trim()))
-                .findFirst();
+    /** Devuelve null si no existe. */
+    public Entrada buscarEntrada(String codigo) {
+        String buscado = codigo == null ? "" : codigo.trim();
+        for (Compra c : compras) {
+            if (c.getEstado() == EstadoCompra.CONFIRMADA) {
+                for (Entrada e : c.getEntradas()) {
+                    if (e.getCodigo().equalsIgnoreCase(buscado)) {
+                        return e;
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public List<Compra> getCompras() {

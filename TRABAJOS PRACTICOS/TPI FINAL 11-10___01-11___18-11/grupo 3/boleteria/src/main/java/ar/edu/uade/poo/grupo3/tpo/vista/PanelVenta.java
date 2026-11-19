@@ -14,11 +14,9 @@ import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Cliente;
 import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Compra;
 import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Entrada;
 import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.Factura;
-import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.PaqueteVIP;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -58,15 +56,12 @@ public class PanelVenta extends JPanel implements Pantalla {
     private final VentaController controlador;
     private final JComboBox<Funcion> funciones = new JComboBox<>();
     private final JComboBox<Sector> sectores = new JComboBox<>();
-    private final JLabel clienteSesion = Estilo.subtitulo("Sin sesión");
-    private final JTextField codigoPreventa = new JTextField(10);
-    private final JLabel avisoPreventa = Estilo.subtitulo(" ");
+    private final JComboBox<Cliente> clientes = new JComboBox<>();
     private final JPanel mapa = new JPanel();
     private final JSpinner cantidad = new JSpinner(new SpinnerNumberModel(2, 1, 10, 1));
 
     private final JLabel detalle = Estilo.subtitulo("Elegí tus asientos en el mapa.");
     private final JLabel precioUnitario = Estilo.subtitulo(" ");
-    private final JCheckBox paqueteVip = new JCheckBox();
     private final JTextField codigoPromo = new JTextField(10);
     private final JButton aplicarPromo = new JButton("Aplicar");
     private final JLabel subtotal = new JLabel("—");
@@ -112,7 +107,6 @@ public class PanelVenta extends JPanel implements Pantalla {
             }
         });
         cantidad.addChangeListener(e -> actualizarResumen());
-        paqueteVip.addActionListener(e -> actualizarResumen());
         reservar.addActionListener(e -> reservar());
         pagar.addActionListener(e -> pagar());
         cancelar.addActionListener(e -> cancelar());
@@ -129,15 +123,10 @@ public class PanelVenta extends JPanel implements Pantalla {
     }
 
     private JComponent columnaMapa() {
-        JPanel filtros = new JPanel(new GridLayout(2, 2, 10, 8));
+        JPanel filtros = new JPanel(new GridLayout(1, 3, 10, 8));
         filtros.add(campo("Función", funciones));
         filtros.add(campo("Sector", sectores));
-        filtros.add(campo("Cliente (sesión)", clienteSesion));
-        filtros.add(campo("Código de preventa", codigoPreventa));
-
-        JPanel arriba = new JPanel(new BorderLayout(0, 4));
-        arriba.add(filtros, BorderLayout.CENTER);
-        arriba.add(avisoPreventa, BorderLayout.SOUTH);
+        filtros.add(campo("Cliente", clientes));
 
         JPanel envoltorio = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         envoltorio.add(mapa);
@@ -148,7 +137,7 @@ public class PanelVenta extends JPanel implements Pantalla {
         contenedorMapa.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
 
         JPanel columna = new JPanel(new BorderLayout(0, 12));
-        columna.add(arriba, BorderLayout.NORTH);
+        columna.add(filtros, BorderLayout.NORTH);
         columna.add(new JScrollPane(contenedorMapa), BorderLayout.CENTER);
         return Estilo.tarjeta(columna);
     }
@@ -210,7 +199,6 @@ public class PanelVenta extends JPanel implements Pantalla {
                 Estilo.seccion("Tu compra"),
                 detalle,
                 precioUnitario,
-                paqueteVip,
                 new JLabel("Código promocional"),
                 promo,
                 fila("Subtotal", subtotal),
@@ -243,23 +231,22 @@ public class PanelVenta extends JPanel implements Pantalla {
         cargando = true;
         Object funcionAnterior = funciones.getSelectedItem();
         funciones.removeAllItems();
-        controlador.funcionesDisponibles().forEach(funciones::addItem);
+        for (Funcion f : controlador.funcionesDisponibles()) {
+            funciones.addItem(f);
+        }
         if (funcionAnterior != null) {
             funciones.setSelectedItem(funcionAnterior);
         }
-        actualizarClienteSesion();
+        Object clienteAnterior = clientes.getSelectedItem();
+        clientes.removeAllItems();
+        for (Cliente c : controlador.clientes()) {
+            clientes.addItem(c);
+        }
+        if (clienteAnterior != null) {
+            clientes.setSelectedItem(clienteAnterior);
+        }
         cargando = false;
-        PaqueteVIP vip = controlador.paqueteVip();
-        paqueteVip.setText(vip == null ? "Sin paquetes VIP"
-                : "Sumar " + vip.getNombre() + " (" + Estilo.pesos(vip.getPrecio()) + ")");
-        paqueteVip.setEnabled(vip != null);
         cargarSectores();
-    }
-
-    private void actualizarClienteSesion() {
-        controlador.clienteSesion().ifPresentOrElse(
-                c -> clienteSesion.setText(c.getNombre() + " · " + c.getEmail()),
-                () -> clienteSesion.setText("Sin sesión — Clientes → Iniciar sesión"));
     }
 
     private Funcion funcion() {
@@ -275,9 +262,9 @@ public class PanelVenta extends JPanel implements Pantalla {
         sectores.removeAllItems();
         Funcion funcion = funcion();
         if (funcion != null) {
-            funcion.getSede().getSectores().forEach(sectores::addItem);
-            avisoPreventa.setText(controlador.estaEnPreventa(funcion)
-                    ? "Esta función está en preventa: necesitás el código de acceso." : " ");
+            for (Sector s : funcion.getSede().getSectores()) {
+                sectores.addItem(s);
+            }
         }
         cargando = false;
         seleccion.clear();
@@ -397,13 +384,11 @@ public class PanelVenta extends JPanel implements Pantalla {
         Funcion funcion = funcion();
         Sector sector = sector();
         Compra compra = controlador.getCompra();
-        PaqueteVIP vip = controlador.paqueteVip();
         boolean enCurso = compra != null;
         funciones.setEnabled(!enCurso);
         sectores.setEnabled(!enCurso);
-        codigoPreventa.setEnabled(!enCurso);
-        paqueteVip.setEnabled(!enCurso && vip != null);
-        reservar.setEnabled(!enCurso && controlador.clienteSesion().isPresent());
+        clientes.setEnabled(!enCurso);
+        reservar.setEnabled(!enCurso);
         pagar.setEnabled(enCurso);
         codigoPromo.setEnabled(enCurso);
         aplicarPromo.setEnabled(enCurso);
@@ -429,12 +414,16 @@ public class PanelVenta extends JPanel implements Pantalla {
         }
         int entradas = sector instanceof SectorNumerado ? seleccion.size() : (Integer) cantidad.getValue();
         if (sector instanceof SectorNumerado) {
+            List<String> nombresAsientos = new ArrayList<>();
+            for (Asiento a : seleccion) {
+                nombresAsientos.add(a.toString());
+            }
             detalle.setText(seleccion.isEmpty() ? "Elegí tus asientos en el mapa."
-                    : "Elegidos: " + String.join(" ", seleccion.stream().map(Asiento::toString).toList()));
+                    : "Elegidos: " + String.join(" ", nombresAsientos));
         } else {
             detalle.setText(entradas + " entrada(s) en " + sector.getNombre());
         }
-        double estimado = entradas * unitario + (paqueteVip.isSelected() && vip != null ? vip.getPrecio() : 0);
+        double estimado = entradas * unitario;
         subtotal.setText(entradas == 0 ? "—" : Estilo.pesos(estimado));
         descuento.setText("—");
         cargos.setText(entradas == 0 ? "—" : "≈ " + Estilo.pesos(Math.round(estimado * Compra.CARGO_SERVICIO / 100)));
@@ -445,18 +434,17 @@ public class PanelVenta extends JPanel implements Pantalla {
     private void reservar() {
         Funcion funcion = funcion();
         Sector sector = sector();
-        Cliente cliente = controlador.clienteSesion().orElse(null);
+        Cliente cliente = (Cliente) clientes.getSelectedItem();
         if (funcion == null || sector == null) {
             aviso.error("Elegí función y sector.");
             return;
         }
         if (cliente == null) {
-            aviso.error("Iniciá sesión en Clientes → Iniciar sesión antes de reservar.");
+            aviso.error("Elegí el cliente.");
             return;
         }
         try {
-            controlador.reservar(cliente, codigoPreventa.getText(), funcion, sector, new ArrayList<>(seleccion),
-                    (Integer) cantidad.getValue(), paqueteVip.isSelected());
+            controlador.reservar(cliente, funcion, sector, new ArrayList<>(seleccion), (Integer) cantidad.getValue());
             seleccion.clear();
             timer.start();
             aviso.info("¡Listo! Tus lugares quedan reservados por " + Compra.MINUTOS_RESERVA

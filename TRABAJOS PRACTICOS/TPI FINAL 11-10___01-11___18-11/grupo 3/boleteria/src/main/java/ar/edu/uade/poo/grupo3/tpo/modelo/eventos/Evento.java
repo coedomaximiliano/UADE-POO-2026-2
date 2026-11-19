@@ -35,7 +35,12 @@ public class Evento {
         if (artista == null || artista.isBlank()) {
             throw new IllegalArgumentException("El nombre del artista es obligatorio");
         }
-        boolean repetido = artistas.stream().anyMatch(a -> a.equalsIgnoreCase(artista.trim()));
+        boolean repetido = false;
+        for (String a : artistas) {
+            if (a.equalsIgnoreCase(artista.trim())) {
+                repetido = true;
+            }
+        }
         if (!repetido) {
             artistas.add(artista.trim());
         }
@@ -49,7 +54,13 @@ public class Evento {
     }
 
     public List<Funcion> getFuncionesDisponibles() {
-        return funciones.stream().filter(f -> f.getEstado() == EstadoFuncion.PROGRAMADA).toList();
+        List<Funcion> disponibles = new ArrayList<>();
+        for (Funcion f : funciones) {
+            if (f.getEstado() == EstadoFuncion.PROGRAMADA) {
+                disponibles.add(f);
+            }
+        }
+        return disponibles;
     }
 
     public List<Funcion> getFunciones() {

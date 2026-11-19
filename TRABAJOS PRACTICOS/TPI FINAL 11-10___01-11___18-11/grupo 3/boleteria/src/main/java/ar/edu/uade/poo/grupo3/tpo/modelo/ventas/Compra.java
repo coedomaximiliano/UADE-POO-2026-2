@@ -29,15 +29,13 @@ public class Compra {
     private final Cliente cliente;
     private final LocalDateTime fechaCreacion;
     private final LocalDateTime vencimientoReserva;
-    private final String codigoPreventa;
     private EstadoCompra estado;
     private final List<Entrada> entradas;
-    private final List<PaqueteVIP> paquetes;
     private Promocion promocion;
     private MedioPago medioPago;
     private String nroOperacion;
 
-    public Compra(Cliente cliente, String codigoPreventa, LocalDateTime ahora) {
+    public Compra(Cliente cliente, LocalDateTime ahora) {
         if (cliente == null) {
             throw new IllegalArgumentException("La compra necesita un cliente");
         }
@@ -45,10 +43,8 @@ public class Compra {
         this.cliente = cliente;
         this.fechaCreacion = ahora;
         this.vencimientoReserva = ahora.plusMinutes(MINUTOS_RESERVA);
-        this.codigoPreventa = codigoPreventa == null ? "" : codigoPreventa.trim();
         this.estado = EstadoCompra.RESERVADA;
         this.entradas = new ArrayList<>();
-        this.paquetes = new ArrayList<>();
     }
 
     /** Patrón Creador (GRASP): la compra crea sus entradas y las registra en la función. */
@@ -61,12 +57,6 @@ public class Compra {
         return entrada;
     }
 
-    public void agregarPaquete(PaqueteVIP paquete) {
-        verificarReservada();
-        paquete.reservarCupo();
-        paquetes.add(paquete);
-    }
-
     public void aplicarPromocion(Promocion promocion) {
         verificarReservada();
         if (promocion != null && !promocion.aplicaA(this)) {
@@ -76,19 +66,25 @@ public class Compra {
     }
 
     public List<Entrada> getEntradasActivas() {
-        return entradas.stream().filter(e -> e.getEstado().estaActiva()).toList();
+        List<Entrada> activas = new ArrayList<>();
+        for (Entrada e : entradas) {
+            if (e.getEstado().estaActiva()) {
+                activas.add(e);
+            }
+        }
+        return activas;
     }
 
     public double calcularSubtotalEntradas() {
-        return getEntradasActivas().stream().mapToDouble(Entrada::getPrecio).sum();
-    }
-
-    public double calcularSubtotalPaquetes() {
-        return paquetes.stream().mapToDouble(PaqueteVIP::getPrecio).sum();
+        double subtotal = 0;
+        for (Entrada e : getEntradasActivas()) {
+            subtotal += e.getPrecio();
+        }
+        return subtotal;
     }
 
     public double calcularSubtotal() {
-        return calcularSubtotalEntradas() + calcularSubtotalPaquetes();
+        return calcularSubtotalEntradas();
     }
 
     public double calcularDescuento() {
@@ -153,8 +149,9 @@ public class Compra {
         if (estado != EstadoCompra.RESERVADA) {
             return;
         }
-        entradas.forEach(Entrada::anular);
-        paquetes.forEach(PaqueteVIP::liberarCupo);
+        for (Entrada e : entradas) {
+            e.anular();
+        }
         estado = nuevoEstado;
     }
 
@@ -180,20 +177,12 @@ public class Compra {
         return vencimientoReserva;
     }
 
-    public String getCodigoPreventa() {
-        return codigoPreventa;
-    }
-
     public EstadoCompra getEstado() {
         return estado;
     }
 
     public List<Entrada> getEntradas() {
         return Collections.unmodifiableList(entradas);
-    }
-
-    public List<PaqueteVIP> getPaquetes() {
-        return Collections.unmodifiableList(paquetes);
     }
 
     public Promocion getPromocion() {

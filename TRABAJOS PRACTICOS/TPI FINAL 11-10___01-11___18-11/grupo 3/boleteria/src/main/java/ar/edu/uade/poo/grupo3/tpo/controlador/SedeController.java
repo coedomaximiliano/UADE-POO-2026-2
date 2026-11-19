@@ -5,6 +5,7 @@ import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.Sector;
 import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.Sede;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -21,9 +22,13 @@ public class SedeController {
 
     public List<Sede> listar(String filtro) {
         String f = filtro == null ? "" : filtro.trim().toLowerCase();
-        return boleteria.getSedes().stream()
-                .filter(s -> s.getNombre().toLowerCase().contains(f) || s.getDireccion().toLowerCase().contains(f))
-                .toList();
+        List<Sede> encontradas = new ArrayList<>();
+        for (Sede s : boleteria.getSedes()) {
+            if (s.getNombre().toLowerCase().contains(f) || s.getDireccion().toLowerCase().contains(f)) {
+                encontradas.add(s);
+            }
+        }
+        return encontradas;
     }
 
     public int funcionesActivas(Sede sede) {
@@ -32,7 +37,9 @@ public class SedeController {
 
     public Sede alta(String nombre, String direccion, List<Sector> sectores) throws IOException {
         Sede sede = new Sede(nombre, direccion);
-        sectores.forEach(sede::agregarSector);
+        for (Sector sector : sectores) {
+            sede.agregarSector(sector);
+        }
         boleteria.agregarSede(sede);
         boleteria.guardarSedes();
         return sede;

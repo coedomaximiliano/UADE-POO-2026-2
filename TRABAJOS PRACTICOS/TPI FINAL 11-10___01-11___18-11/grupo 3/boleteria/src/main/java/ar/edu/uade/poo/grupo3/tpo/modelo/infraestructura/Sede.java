@@ -3,7 +3,6 @@ package ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /** Lugar físico donde se hace el espectáculo (la Esfera, un estadio, un teatro). */
 public class Sede {
@@ -50,18 +49,30 @@ public class Sede {
         if (sector == null) {
             throw new IllegalArgumentException("El sector no puede ser nulo");
         }
-        if (buscarSector(sector.getCodigo()).isPresent()) {
+        if (buscarSector(sector.getCodigo()) != null) {
             throw new IllegalArgumentException("Ya existe un sector con código " + sector.getCodigo());
         }
         sectores.add(sector);
     }
 
     public boolean quitarSector(String codigo) {
-        return sectores.removeIf(s -> s.getCodigo().equalsIgnoreCase(codigo));
+        for (int i = 0; i < sectores.size(); i++) {
+            if (sectores.get(i).getCodigo().equalsIgnoreCase(codigo)) {
+                sectores.remove(i);
+                return true;
+            }
+        }
+        return false;
     }
 
-    public Optional<Sector> buscarSector(String codigo) {
-        return sectores.stream().filter(s -> s.getCodigo().equalsIgnoreCase(codigo)).findFirst();
+    /** Devuelve null si no existe. */
+    public Sector buscarSector(String codigo) {
+        for (Sector s : sectores) {
+            if (s.getCodigo().equalsIgnoreCase(codigo)) {
+                return s;
+            }
+        }
+        return null;
     }
 
     public List<Sector> getSectores() {
@@ -69,7 +80,11 @@ public class Sede {
     }
 
     public int getCapacidadTotal() {
-        return sectores.stream().mapToInt(Sector::getCapacidad).sum();
+        int total = 0;
+        for (Sector s : sectores) {
+            total += s.getCapacidad();
+        }
+        return total;
     }
 
     @Override

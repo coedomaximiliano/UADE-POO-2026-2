@@ -101,7 +101,9 @@ public class PanelModificacionSede extends JPanel implements Pantalla {
         Sede anterior = seleccionada();
         cargando = true;
         selector.removeAllItems();
-        controller.listar("").forEach(selector::addItem);
+        for (Sede s : controller.listar("")) {
+            selector.addItem(s);
+        }
         if (anterior != null && controller.listar("").contains(anterior)) {
             selector.setSelectedItem(anterior);
         }

@@ -36,13 +36,11 @@ public class VentanaPrincipal extends JFrame {
 
         SedeController sedes = new SedeController(boleteria);
         VentaController ventas = new VentaController(boleteria);
-        registrar("inicio", new PanelInicio(boleteria, () -> ir("alta"), () -> ir("consulta"), () -> ir("registro")));
+        registrar("inicio", new PanelInicio(boleteria, () -> ir("alta"), () -> ir("consulta")));
         registrar("consulta", new PanelConsultaSedes(sedes));
         registrar("alta", new PanelAltaSede(sedes));
         registrar("modificacion", new PanelModificacionSede(sedes));
         registrar("baja", new PanelBajaSede(sedes));
-        registrar("registro", new PanelRegistroCliente(boleteria));
-        registrar("login", new PanelLoginCliente(boleteria));
         registrar("venta", new PanelVenta(ventas));
         registrar("devolucion", new PanelDevolucion(ventas));
 
@@ -74,10 +72,6 @@ public class VentanaPrincipal extends JFrame {
         sedes.add(item("Modificación", KeyEvent.VK_3, () -> ir("modificacion")));
         sedes.add(item("Baja", KeyEvent.VK_4, () -> ir("baja")));
 
-        JMenu clientes = new JMenu("Clientes");
-        clientes.add(item("Registro de cuenta", KeyEvent.VK_R, () -> ir("registro")));
-        clientes.add(item("Iniciar sesión", KeyEvent.VK_L, () -> ir("login")));
-
         JMenu ventas = new JMenu("Ventas");
         ventas.add(item("Venta de entradas", KeyEvent.VK_V, () -> ir("venta")));
         ventas.add(item("Devoluciones", KeyEvent.VK_D, () -> ir("devolucion")));
@@ -95,7 +89,6 @@ public class VentanaPrincipal extends JFrame {
         JMenuBar barra = new JMenuBar();
         barra.add(inicio);
         barra.add(sedes);
-        barra.add(clientes);
         barra.add(ventas);
         barra.add(ayuda);
         return barra;

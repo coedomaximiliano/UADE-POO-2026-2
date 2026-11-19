@@ -27,7 +27,6 @@ public class Funcion {
     private final double precioBase;
     private final Sede sede;
     private EstadoFuncion estado;
-    private Preventa preventa;
     private final List<Entrada> entradas;
 
     public Funcion(int id, Evento evento, LocalDateTime fechaHora, double precioBase, Sede sede) {
@@ -58,20 +57,34 @@ public class Funcion {
             if (asiento == null || !numerado.getAsientos().contains(asiento)) {
                 return false;
             }
-            return entradas.stream().noneMatch(e -> e.getEstado().estaActiva()
-                    && e.getSector().equals(sector) && asiento.equals(e.getAsiento()));
+            for (Entrada e : entradas) {
+                if (e.getEstado().estaActiva() && e.getSector().equals(sector) && asiento.equals(e.getAsiento())) {
+                    return false;
+                }
+            }
+            return true;
         }
         return lugaresLibres(sector) > 0;
     }
 
     public List<Asiento> getAsientosLibres(SectorNumerado sector) {
-        return sector.getAsientos().stream().filter(a -> estaDisponible(sector, a)).toList();
+        List<Asiento> libres = new ArrayList<>();
+        for (Asiento a : sector.getAsientos()) {
+            if (estaDisponible(sector, a)) {
+                libres.add(a);
+            }
+        }
+        return libres;
     }
 
     public int lugaresOcupados(Sector sector) {
-        return (int) entradas.stream()
-                .filter(e -> e.getEstado().estaActiva() && e.getSector().equals(sector))
-                .count();
+        int ocupados = 0;
+        for (Entrada e : entradas) {
+            if (e.getEstado().estaActiva() && e.getSector().equals(sector)) {
+                ocupados++;
+            }
+        }
+        return ocupados;
     }
 
     public int lugaresLibres(Sector sector) {
@@ -84,10 +97,6 @@ public class Funcion {
             return 0;
         }
         return lugaresOcupados(sector) * 100.0 / sector.getCapacidad();
-    }
-
-    public boolean estaEnPreventa(LocalDateTime ahora) {
-        return preventa != null && preventa.estaVigente(ahora);
     }
 
     public void registrarEntrada(Entrada entrada) {
@@ -103,7 +112,12 @@ public class Funcion {
         if (estado == EstadoFuncion.CANCELADA || estado == EstadoFuncion.FINALIZADA) {
             return;
         }
-        boolean agotada = sede.getSectores().stream().allMatch(s -> lugaresLibres(s) == 0);
+        boolean agotada = true;
+        for (Sector s : sede.getSectores()) {
+            if (lugaresLibres(s) != 0) {
+                agotada = false;
+            }
+        }
         estado = agotada ? EstadoFuncion.AGOTADA : EstadoFuncion.PROGRAMADA;
     }
 
@@ -147,14 +161,6 @@ public class Funcion {
         if (estado != null) {
             this.estado = estado;
         }
-    }
-
-    public Preventa getPreventa() {
-        return preventa;
-    }
-
-    public void setPreventa(Preventa preventa) {
-        this.preventa = preventa;
     }
 
     public List<Entrada> getEntradas() {

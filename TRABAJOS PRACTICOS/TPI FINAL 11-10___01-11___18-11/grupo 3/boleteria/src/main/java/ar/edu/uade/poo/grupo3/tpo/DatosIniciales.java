@@ -3,43 +3,28 @@ package ar.edu.uade.poo.grupo3.tpo;
 import ar.edu.uade.poo.grupo3.tpo.modelo.Boleteria;
 import ar.edu.uade.poo.grupo3.tpo.modelo.enums.TipoSector;
 import ar.edu.uade.poo.grupo3.tpo.modelo.eventos.Funcion;
-import ar.edu.uade.poo.grupo3.tpo.modelo.eventos.Preventa;
 import ar.edu.uade.poo.grupo3.tpo.modelo.eventos.Evento;
 import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.Sector;
 import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.Sede;
 import ar.edu.uade.poo.grupo3.tpo.modelo.promociones.Promocion;
-import ar.edu.uade.poo.grupo3.tpo.modelo.reglas.NoDejarAsientoSuelto;
-import ar.edu.uade.poo.grupo3.tpo.modelo.reglas.RequiereCodigoPreventa;
-import ar.edu.uade.poo.grupo3.tpo.modelo.ventas.PaqueteVIP;
 
 import java.io.IOException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Optional;
 
 /**
  * Configura la boletería: carga los .txt de la carpeta datos/ y, si están vacíos, crea datos de ejemplo.
- * Los eventos y funciones se cargan desde datos/eventos.txt y datos/funciones.txt; si no hay ninguno, se crean de ejemplo.
+ * Los eventos y funciones no se guardan: se crean en memoria cada vez que arranca, con fechas a partir de hoy.
  */
 public final class DatosIniciales {
-
-    public static final String CONTRASENIA_DEMO = "boleteria123";
 
     private DatosIniciales() {
     }
 
     public static void inicializar(Boleteria boleteria) throws IOException {
-        boleteria.agregarRegla(new RequiereCodigoPreventa());
-        boleteria.agregarRegla(new NoDejarAsientoSuelto());
         boleteria.agregarPromocion(new Promocion("BANCO20", 20, "Promo bancaria"));
         boleteria.agregarPromocion(new Promocion("FAN10", 10, "Club de fans"));
-
-        PaqueteVIP gold = new PaqueteVIP("Experiencia Gold", 85000, 20);
-        gold.agregarBeneficio("Ingreso anticipado");
-        gold.agregarBeneficio("Lounge con bebidas");
-        gold.agregarBeneficio("Merchandising exclusivo");
-        boleteria.agregarPaquete(gold);
 
         boleteria.cargarDatos();
         if (boleteria.getSedes().isEmpty()) {
@@ -47,15 +32,12 @@ public final class DatosIniciales {
             boleteria.guardarSedes();
         }
         if (boleteria.getClientes().isEmpty()) {
-            boleteria.registrarCuenta("30111222", "Ana García", "ana@mail.com", CONTRASENIA_DEMO);
-            boleteria.registrarCuenta("28999111", "Bruno Díaz", "bruno@mail.com", CONTRASENIA_DEMO);
-            boleteria.registrarCuenta("35444777", "Carla Méndez", "carla@mail.com", CONTRASENIA_DEMO);
+            boleteria.registrarCliente("30111222", "Ana García", "ana@mail.com");
+            boleteria.registrarCliente("28999111", "Bruno Díaz", "bruno@mail.com");
+            boleteria.registrarCliente("35444777", "Carla Méndez", "carla@mail.com");
             boleteria.guardarClientes();
         }
-        if (boleteria.getEventos().isEmpty()) {
-            crearEventosDeEjemplo(boleteria);
-            boleteria.guardarEventos();
-        }
+        crearEventosDeEjemplo(boleteria);
     }
 
     private static void crearSedesDeEjemplo(Boleteria boleteria) {
@@ -75,20 +57,19 @@ public final class DatosIniciales {
     }
 
     public static void crearEventosDeEjemplo(Boleteria boleteria) {
-        Optional<Sede> esfera = boleteria.buscarSede("Esfera Las Vegas");
-        if (esfera.isEmpty()) {
+        Sede esfera = boleteria.buscarSede("Esfera Las Vegas");
+        if (esfera == null) {
             return;
         }
         Evento recital = new Evento(1, "Los Satélites — Órbita Tour", "Show en 360°", 120, "Rock");
         recital.agregarArtista("Los Satélites");
         LocalDate hoy = LocalDate.now();
         Funcion f1 = new Funcion(1, recital, LocalDateTime.of(hoy.plusDays(15), LocalTime.of(21, 0)),
-                50000, esfera.get());
+                50000, esfera);
         Funcion f2 = new Funcion(2, recital, LocalDateTime.of(hoy.plusDays(30), LocalTime.of(21, 0)),
-                50000, esfera.get());
-        f2.setPreventa(new Preventa("ORBITA26", LocalDateTime.now().minusDays(1), LocalDateTime.now().plusDays(3)));
+                50000, esfera);
         Funcion f3 = new Funcion(3, recital, LocalDateTime.of(hoy.plusDays(1), LocalTime.of(21, 0)),
-                50000, esfera.get());
+                50000, esfera);
         recital.agregarFuncion(f1);
         recital.agregarFuncion(f2);
         recital.agregarFuncion(f3);

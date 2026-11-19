@@ -74,7 +74,12 @@ public class PanelAltaSede extends JPanel implements Pantalla {
     private void agregarSector() {
         try {
             Sector sector = formulario.crearSector();
-            boolean repetido = sectores.stream().anyMatch(s -> s.getCodigo().equals(sector.getCodigo()));
+            boolean repetido = false;
+            for (Sector s : sectores) {
+                if (s.getCodigo().equals(sector.getCodigo())) {
+                    repetido = true;
+                }
+            }
             if (repetido) {
                 throw new IllegalArgumentException("Ya agregaste un sector con código " + sector.getCodigo());
             }

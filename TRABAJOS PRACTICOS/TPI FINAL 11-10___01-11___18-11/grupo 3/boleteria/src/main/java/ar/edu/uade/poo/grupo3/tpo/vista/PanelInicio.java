@@ -2,6 +2,7 @@ package ar.edu.uade.poo.grupo3.tpo.vista;
 
 import ar.edu.uade.poo.grupo3.tpo.modelo.Boleteria;
 import ar.edu.uade.poo.grupo3.tpo.modelo.eventos.Funcion;
+import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.Sector;
 import ar.edu.uade.poo.grupo3.tpo.modelo.infraestructura.Sede;
 
 import javax.swing.BorderFactory;
@@ -13,7 +14,6 @@ import javax.swing.table.DefaultTableModel;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 
@@ -30,7 +30,7 @@ public class PanelInicio extends JPanel implements Pantalla {
     private final DefaultTableModel modeloFunciones =
             Estilo.modeloTabla("Evento", "Sede", "Fecha", "Precio base", "Ocupación", "Estado");
 
-    public PanelInicio(Boleteria boleteria, Runnable irAAlta, Runnable irAConsulta, Runnable irARegistro) {
+    public PanelInicio(Boleteria boleteria, Runnable irAAlta, Runnable irAConsulta) {
         super(new BorderLayout());
         this.boleteria = boleteria;
         setBorder(BorderFactory.createEmptyBorder(20, 24, 20, 24));
@@ -42,7 +42,7 @@ public class PanelInicio extends JPanel implements Pantalla {
         metricas.add(metrica("Sedes", sedes, "registradas"));
         metricas.add(metrica("Sectores", sectores, "entre todas las sedes"));
         metricas.add(metrica("Capacidad", capacidad, "lugares en total"));
-        metricas.add(metrica("Cuentas", cuentas, "clientes registrados"));
+        metricas.add(metrica("Clientes", cuentas, "registrados"));
 
         JTable tablaFunciones = Estilo.tabla(modeloFunciones);
         Estilo.anchos(tablaFunciones, 240, 150, 160, 100, 100, 160);
@@ -50,12 +50,9 @@ public class PanelInicio extends JPanel implements Pantalla {
         nueva.addActionListener(e -> irAAlta.run());
         JButton ver = new JButton("Ver sedes");
         ver.addActionListener(e -> irAConsulta.run());
-        JButton registro = new JButton("Registrar cliente");
-        registro.addActionListener(e -> irARegistro.run());
         JPanel acciones = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         acciones.add(nueva);
         acciones.add(ver);
-        acciones.add(registro);
         JPanel funciones = new JPanel(new BorderLayout(0, 10));
         funciones.add(Estilo.seccion("Próximas funciones"), BorderLayout.NORTH);
         funciones.add(Estilo.scroll(tablaFunciones), BorderLayout.CENTER);
@@ -70,14 +67,23 @@ public class PanelInicio extends JPanel implements Pantalla {
     @Override
     public void alMostrar() {
         sedes.setText(Estilo.numero(boleteria.getSedes().size()));
-        sectores.setText(Estilo.numero(boleteria.getSedes().stream().mapToLong(s -> s.getSectores().size()).sum()));
-        capacidad.setText(Estilo.numero(boleteria.getSedes().stream().mapToLong(Sede::getCapacidadTotal).sum()));
+        long totalSectores = 0;
+        long totalCapacidad = 0;
+        for (Sede s : boleteria.getSedes()) {
+            totalSectores += s.getSectores().size();
+            totalCapacidad += s.getCapacidadTotal();
+        }
+        sectores.setText(Estilo.numero(totalSectores));
+        capacidad.setText(Estilo.numero(totalCapacidad));
         cuentas.setText(Estilo.numero(boleteria.getClientes().size()));
         modeloFunciones.setRowCount(0);
         for (Funcion f : boleteria.buscarFunciones("")) {
-            int ocupados = f.getSede().getSectores().stream().mapToInt(f::lugaresOcupados).sum();
+            int ocupados = 0;
+            for (Sector s : f.getSede().getSectores()) {
+                ocupados += f.lugaresOcupados(s);
+            }
             int total = f.getSede().getCapacidadTotal();
-            String estado = f.estaEnPreventa(LocalDateTime.now()) ? "EN PREVENTA" : f.getEstado().toString();
+            String estado = f.getEstado().toString();
             modeloFunciones.addRow(new Object[]{f.getEvento().getNombre(), f.getSede().getNombre(),
                     f.getFechaHora().format(FECHA), Estilo.pesos(f.getPrecioBase()),
                     ocupados + " / " + Estilo.numero(total), estado});

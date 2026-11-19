@@ -16,7 +16,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import java.util.Optional;
 
 /**
  * Pantalla para validar entradas y gestionar su devolución.
@@ -126,12 +125,11 @@ public class PanelDevolucion extends JPanel implements Pantalla {
     /** Busca la entrada y muestra qué se devolvería. Solo habilita el botón si la devolución es posible. */
     private void verificarEntrada() {
         limpiarResumen();
-        Optional<Entrada> buscada = controlador.buscarEntrada(codigoEntrada.getText());
-        if (buscada.isEmpty()) {
+        Entrada entrada = controlador.buscarEntrada(codigoEntrada.getText());
+        if (entrada == null) {
             aviso.error("No existe ninguna entrada pagada con el código " + codigoEntrada.getText().trim() + ".");
             return;
         }
-        Entrada entrada = buscada.get();
         detalle.setText(entrada.getCodigo() + " · " + entrada.getFuncion().getEvento().getNombre());
         ubicacion.setText(entrada.getUbicacion());
         reembolso.setText(Estilo.pesos(entrada.getValorPagado()));

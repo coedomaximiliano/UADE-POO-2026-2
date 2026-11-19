@@ -5,7 +5,6 @@ import ar.edu.uade.poo.grupo3.tpo.modelo.enums.TipoSector;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 
 /** Sector con asientos numerados por fila (en la Esfera, todos los sectores son así). */
 public class SectorNumerado extends Sector {
@@ -43,18 +42,35 @@ public class SectorNumerado extends Sector {
         }
     }
 
-    public Optional<Asiento> buscarAsiento(String fila, int numero) {
-        return asientos.stream()
-                .filter(a -> a.getFila().equalsIgnoreCase(fila) && a.getNumero() == numero)
-                .findFirst();
+    /** Devuelve null si no existe. */
+    public Asiento buscarAsiento(String fila, int numero) {
+        for (Asiento a : asientos) {
+            if (a.getFila().equalsIgnoreCase(fila) && a.getNumero() == numero) {
+                return a;
+            }
+        }
+        return null;
     }
 
     public List<Asiento> getAsientosDeFila(String fila) {
-        return asientos.stream().filter(a -> a.getFila().equalsIgnoreCase(fila)).toList();
+        List<Asiento> deLaFila = new ArrayList<>();
+        for (Asiento a : asientos) {
+            if (a.getFila().equalsIgnoreCase(fila)) {
+                deLaFila.add(a);
+            }
+        }
+        return deLaFila;
     }
 
     public List<String> getFilas() {
-        return asientos.stream().map(Asiento::getFila).distinct().sorted().toList();
+        List<String> filas = new ArrayList<>();
+        for (Asiento a : asientos) {
+            if (!filas.contains(a.getFila())) {
+                filas.add(a.getFila());
+            }
+        }
+        Collections.sort(filas);
+        return filas;
     }
 
     public List<Asiento> getAsientos() {
